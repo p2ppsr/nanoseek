@@ -1,0 +1,35 @@
+{
+  "name": "nanoseek",
+  "version": "0.1.0",
+  "description": "UHRP Downloader",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "doc": "documentation readme index.js --section=API"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/p2ppsr/nanoseek.git"
+  },
+  "keywords": [
+    "UHRP",
+    "NanoStore"
+  ],
+  "author": "Peer-to-peer Privacy Systems Research LLC",
+  "license": "Open BSV License",
+  "bugs": {
+    "url": "https://github.com/p2ppsr/nanoseek/issues"
+  },
+  "homepage": "https://github.com/p2ppsr/nanoseek#readme",
+  "dependencies": {
+    "isomorphic-fetch": "^3.0.0",
+    "parapet-js": "^0.1.1",
+    "uhrp-url": "^0.1.0"
+  },
+  "devDependencies": {
+    "documentation": "^13.2.5",
+    "jest": "^26.6.3",
+    "standard": "^16.0.3"
+  }
+}

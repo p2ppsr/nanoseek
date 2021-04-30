@@ -1,0 +1,11 @@
+node_modules
+data/database.sqlite
+.env
+storage-creds.json
+yarn-error.log
+functions
+yarn.lock
+public/.well-known/cwi-secret-server
+app.production.yaml
+app.staging.yaml
+.npmrc
