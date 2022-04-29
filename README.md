@@ -51,6 +51,7 @@ Locates HTTP URLs where content can be downloaded. Uses trusted hosts when possi
     *   `obj.trustedHosts` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** A set of UHRP hosts given preferential treatmeant. By default, the Babbage host is trusted. Provide an empty array to resolve all URLs. (optional, default `['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf']`)
     *   `obj.limit` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The number of results to return. (optional, default `10`)
     *   `obj.offset` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The offset into the total number of results. (optional, default `0`)
+    *   `obj.bridgeportResolvers` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)?** Specify custom Bridgeport resolvers
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** An array of HTTP URLs where content can be downloaded.
 
@@ -64,6 +65,7 @@ Downloads content from a UHRP URL and returns it as a buffer with its mime type,
 
     *   `obj.URL` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The UHRP URL to download.
     *   `obj.trustedHosts` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** A set of UHRP hosts given preferential treatmeant. By default, the Babbage host is trusted. Provide an empty array to disable trusted host resolution. (optional, default `['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf']`)
+    *   `obj.bridgeportResolvers` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)?** Specify custom Bridgeport resolvers
     *   `obj.limit` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The maximum number of URLs to try downloading from before giving up. (optional, default `10`)
     *   `obj.offset` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The offset into the list of potential download URLs to start from. (optional, default `0`)
 

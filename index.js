@@ -11,6 +11,7 @@ const fetch = require('isomorphic-fetch')
  * @param {Array<String>} [obj.trustedHosts=['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf']] A set of UHRP hosts given preferential treatmeant. By default, the Babbage host is trusted. Provide an empty array to resolve all URLs.
  * @param {Number} [obj.limit=10] The number of results to return.
  * @param {Number} [obj.offset=0] The offset into the total number of results.
+ * @param {Array} [obj.bridgeportResolvers] Specify custom Bridgeport resolvers
  *
  * @return {Array<String>} An array of HTTP URLs where content can be downloaded.
  */
@@ -18,7 +19,8 @@ const resolve = async ({
   URL,
   trustedHosts = ['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf'],
   limit = 10,
-  offset = 0
+  offset = 0,
+  bridgeportResolvers
 } = {}) => {
   // The hash is extracted from the UHRP URL
   const hash = getHashFromURL(URL).toString('hex')
@@ -50,6 +52,7 @@ const resolve = async ({
   // The query is run against the UHRP Bridge
   const resolved = await parapet({
     bridge: '1AJsUZ7MsJGwmkCZSoDpro28R52ptvGma7',
+    resolvers: bridgeportResolvers,
     request: {
       type: 'json-query',
       query
@@ -62,7 +65,8 @@ const resolve = async ({
       URL,
       trustedHosts: [],
       limit,
-      offset
+      offset,
+      bridgeportResolvers
     })
 
   // The resutt set is reduced only to include URL strings
@@ -79,18 +83,20 @@ const resolve = async ({
  * @param {Array<String>} [obj.trustedHosts=['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf']] A set of UHRP hosts given preferential treatmeant. By default, the Babbage host is trusted. Provide an empty array to disable trusted host resolution.
  * @param {Number} [obj.limit=10] The maximum number of URLs to try downloading from before giving up.
  * @param {Number} [obj.offset=0] The offset into the list of potential download URLs to start from.
+ * @param {Array} [obj.bridgeportResolvers] Specify custom Bridgeport resolvers
  *
  * @return {Object} An object containing "data" (a buffer) and "mimeType" for the content.
  */
 const download = async ({
   URL,
-  trustedHosts = ['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf']
+  trustedHosts = ['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf'],
+  bridgeportResolvers
 } = {}) => {
   // The hash is extracted from the UHRP URL for later validation
   const hash = getHashFromURL(URL).toString('hex')
 
   // A list of potential download URLs are resolved
-  const URLs = await resolve({ URL, trustedHosts })
+  const URLs = await resolve({ URL, trustedHosts, bridgeportResolvers })
 
   // Download is attempted from each URL until successful
   for (let i = 0; i < URLs.length; i++) {
