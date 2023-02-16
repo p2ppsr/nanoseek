@@ -13,26 +13,7 @@ const fetch = require('isomorphic-fetch')
  */
 const resolve = async ({
   URL
-  /* ,
-  trustedHosts = ['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf'],
-  limit = 10,
-  offset = 0,
-  bridgeportResolvers */
 } = {}) => {
-
-  // The URL must not contain a " "
-  if (URL.indexOf(' ') !== -1) {
-    const e = new Error('URL contains a space')
-    e.code = 'ERR_INVALID_HTTP_SPACE_URL'
-    throw e
-  }
-  // The URL must contain a "."
-  if (URL.indexOf('.') === -1) {
-    const e = new Error('URL does not contain a dot')
-    e.code = 'ERR_INVALID_HTTP_DOT_URL'
-    throw e
-  }
-
 
   // The hash is extracted from the UHRP URL
   const hash = getHashFromURL(URL).toString('hex')
@@ -61,6 +42,8 @@ const resolve = async ({
     query.q.find.host = { $in: trustedHosts }
   } */
 
+  // The query is run against the UHRP Confederacy Topic
+  const resolved = 
 
   // The query is run against the UHRP Bridge
   /* const resolved = await parapet({
@@ -73,19 +56,19 @@ const resolve = async ({
   }) */
 
   // If there are no results within a set of trusted hosts, re-run without trusted host restrictions
-  if (resolved.length === 0 && trustedHosts.length > 0) {
+  /* if (resolved.length === 0 && trustedHosts.length > 0) {
     return resolve({
       URL,
       trustedHosts: [],
       limit,
       offset,
       bridgeportResolvers
-    })
+    }) */
 
   // The resutt set is reduced only to include URL strings
-  } else {
+  //} else {
     return resolved.map(x => x.URL)
-  }
+  //}
 }
 
 /**
