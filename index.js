@@ -1,8 +1,7 @@
 import store from '../store'
 
 const queryResult = require ('getURLFromQueryResult')
-const UHRPLookupService = require('UHRPLookupService')
-//const { getHashFromURL } = require('uhrp-url')
+const { getHashFromURL } = require('uhrp-url')
 const crypto = require('crypto')
 const fetch = require('isomorphic-fetch')
 
@@ -45,10 +44,10 @@ const resolve = async ({
   // Retrive the URL where the file can be downloaded
   try {
     return queryResult(
-      decodedResult
+      [decodedResult]
     )
   } catch (e) {
-    throw new Error(`Error retrieving UHRP token URL: ${e.message}`)
+    throw new Error(`Error retrieving URL stored in the UHRP token: ${e.message}`)
   }
 
 }
@@ -66,6 +65,9 @@ const download = async ({
   UHRPUrl,
   confederacyHosts
 } = {}) => {
+
+  // The hash is extracted from the UHRP URL for later validation
+  const hash = getHashFromURL(UHRPUrl).toString('hex')
 
   // A list of potential download URLs are resolved
   const URLs = await resolve({ UHRPUrl, confederacyHosts })
