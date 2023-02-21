@@ -1,26 +1,40 @@
-import store from '../store'
+import store from '../store' // Needs to be coded?
 
-const { queryResult } = require ('getURLFromQueryResult')
-const { getHashFromURL } = require('uhrp-url')
+const { getURLFromQueryResult } = require ('getURLFromQueryResult')
+const { isValidURL, getHashFromURL } = require('uhrp-url')
 const crypto = require('crypto')
 const fetch = require('isomorphic-fetch')
 
 /**
- * Locates HTTP URLs where content can be downloaded. Uses trusted confederacy hosts when possible.
+ * Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
  *
  * @param {Object} obj All parameters are passed in an object.
  * @param {String} obj.UHRPUrl The UHRP URL to resolve.
  * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
  *
  * @return {Array<String>} An array of HTTP URLs where content can be downloaded.
+ * @throws {Error} If UHRP url parameter invalid or Confederacy hosts is not an array
+ * or there is an error retrieving url(s) stored in the UHRP token.
  */
 const resolve = async ({
   UHRPUrl,
   confederacyHosts = [store.getState().settings.confederacyHost]
 } = {}) => {
 
+  if (!isValidURL(UHRPUrl)) {
+    const e = new Error('Invalid parameter UHRP url')
+    e.code = 'ERR_INVALID_UHRP_URL'
+    throw e
+  }
+
+  if (!isArray(confederacyHosts)) {
+    const e = new Error('Invalid parameter Confederacy hosts, must be an array')
+    e.code = 'ERR_INVALID_CONFEDERACY_ARRAY'
+    throw e
+  }
+
   // Use Confederacy UHRP lookup service
-  // *** TBD resolve multiple Confederacy Hosts ***
+  // *** TBD resolve multiple Confederacy hosts ***
   const lookupResult = await boomerang(
     'POST',
     `${confederacyHosts[0]}/lookup`,
@@ -54,21 +68,38 @@ const resolve = async ({
 }
 
 /**
- * Downloads content from a UHRP URL and returns it as a buffer with its mime type, after validating that the hash is correct. Uses trusted hosts when possible.
+ * Downloads content from a UHRP url and returns it as a buffer with its mime type, after validating that the hash is correct. It uses the passed Confederacy hosts or the default one.
  *
  * @param {Object} obj All parameters are passed in an object.
  * @param {String} obj.UHRPUrl The UHRP URL to download.
  * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
  *
  * @return {Object} An object containing "data" (a buffer) and "mimeType" for the content.
+ * @throws {Error} If UHRP url parameter invalid or Confederacy hosts is not an array or hash is invalid or unable to download using retrieved url(s)
  */
 const download = async ({
   UHRPUrl,
   confederacyHosts
 } = {}) => {
 
-  // The hash is extracted from the UHRP URL for later validation
-  const hash = getHashFromURL(UHRPUrl).toString('hex')
+  if (!isValidURL(UHRPUrl)) {
+    const e = new Error('Invalid parameter UHRP url')
+    e.code = 'ERR_INVALID_UHRP_URL'
+    throw e
+  }
+
+  if (!isArray(confederacyHosts)) {
+    const e = new Error('Invalid parameter Confederacy hosts, must be an array')
+    e.code = 'ERR_INVALID_CONFEDERACY_ARRAY'
+    throw e
+  }
+
+  // The hash is extracted from the UHRP url for later validation
+  try {
+    const hash = getHashFromURL(UHRPUrl).toString('hex')
+  } catch (e) {
+    throw new Error(`Error invalid UHRP url: ${e.message}`)
+  }
 
   // A list of potential download URLs are resolved
   const URLs = await resolve({ UHRPUrl, confederacyHosts })
