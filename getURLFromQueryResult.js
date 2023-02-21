@@ -4,14 +4,18 @@
  * Standard Format.
  * @param {object} queryResult - The query result to parse
  * @returns {array} The retrieved URL
- * @throws {Error} If the rerived URL is invalid
+ * @throws {Error} If passed parameter query is invalid
  */
 export default queryResult => {
   if (typeof queryResult === 'undefined') {
-    throw new ValidationError('queryResult is a required parameter!')
+    const e = new Error('queryResult is a required parameter!')
+    e.code = 'ERR_INVALID_PARAM'
+    throw e
   }
   if (typeof queryResult !== 'object') {
-    throw new TypeError(`queryResult must be an object, but ${typeof queryResult} was given!`)
+    const e = new Error(`queryResult must be an object, but ${typeof queryResult} was given!`)
+    e.code = 'ERR_INVALID_TYPE'
+    throw e
   }
   const OP_CHECKSIG = 172
   const res = [
