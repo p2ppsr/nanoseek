@@ -1,7 +1,8 @@
 import store from '../store'
 
+const queryResult = require ('getURLFromQueryResult')
 const UHRPLookupService = require('UHRPLookupService')
-const { getHashFromURL } = require('uhrp-url')
+//const { getHashFromURL } = require('uhrp-url')
 const crypto = require('crypto')
 const fetch = require('isomorphic-fetch')
 
@@ -10,6 +11,7 @@ const fetch = require('isomorphic-fetch')
  *
  * @param {Object} obj All parameters are passed in an object.
  * @param {String} obj.UHRPUrl The UHRP URL to resolve.
+ * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
  *
  * @return {Array<String>} An array of HTTP URLs where content can be downloaded.
  */
@@ -33,22 +35,21 @@ const resolve = async ({
   if (lookupResult.length < 1) {
     return null
   }
-  // Decode the UHRP fields
+
+  // Decode the UHRP token field
   const decodedResult = pushdrop.decode({
     script: Buffer.from(lookupResult[0].outputScript).toString('hex'), // Is Buffer form supported by PushDrop?
     fieldFormat: 'buffer'
   })
 
+  // Retrive the URL where the file can be downloaded
   try {
-    return getAccountDescriptorFromQueryResult(
+    return queryResult(
       decodedResult
     )
   } catch (e) {
-    throw new ValidationError(
-      `Error parsing account descriptor: ${e.message}`
-    )
+    throw new Error(`Error retrieving UHRP token URL: ${e.message}`)
   }
-
 
 }
 
@@ -57,6 +58,7 @@ const resolve = async ({
  *
  * @param {Object} obj All parameters are passed in an object.
  * @param {String} obj.UHRPUrl The UHRP URL to download.
+ * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
  *
  * @return {Object} An object containing "data" (a buffer) and "mimeType" for the content.
  */
@@ -107,7 +109,10 @@ const download = async ({
   }
 
   // If the loop finishes without success, the content cannot be downloaded
-  throw new Error(`Unable to download content from ${URL}`)
+  const e = new Error(`Unable to download content from ${URL}`)
+  e.code = 'ERR_INVALID_DOWNLOAD_URL'
+  throw e
+
 }
 
 module.exports = { resolve, download }
