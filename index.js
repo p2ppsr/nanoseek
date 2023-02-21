@@ -9,7 +9,7 @@ const fetch = require('isomorphic-fetch')
  * Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
  *
  * @param {Object} obj All parameters are passed in an object.
- * @param {String} obj.UHRPUrl The UHRP URL to resolve.
+ * @param {String} obj.UHRPUrl The UHRP url to resolve.
  * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
  *
  * @return {Array<String>} An array of HTTP URLs where content can be downloaded.
@@ -55,14 +55,14 @@ const resolve = async ({
     fieldFormat: 'buffer'
   })
 
-  // Retrive the URL where the file can be downloaded
+  // Retrive the url where the file can be downloaded
   // *** TBD return multiple URLs ***
   try {
     return [getUrlFromQueryResult(
       decodedResult
     )]
   } catch (e) {
-    throw new Error(`Error retrieving URL stored in the UHRP token: ${e.message}`)
+    throw new Error(`Error retrieving url stored in the UHRP token: ${e.message}`)
   }
 
 }
@@ -71,7 +71,7 @@ const resolve = async ({
  * Downloads content from a UHRP url and returns it as a buffer with its mime type, after validating that the hash is correct. It uses the passed Confederacy hosts or the default one.
  *
  * @param {Object} obj All parameters are passed in an object.
- * @param {String} obj.UHRPUrl The UHRP URL to download.
+ * @param {String} obj.UHRPUrl The UHRP url to download.
  * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
  *
  * @return {Object} An object containing "data" (a buffer) and "mimeType" for the content.
@@ -104,13 +104,13 @@ const download = async ({
   // A list of potential download URLs are resolved
   const URLs = await resolve({ UHRPUrl, confederacyHosts })
 
-  // Download is attempted from each URL until successful
+  // Download is attempted from each url until successful
   for (let i = 0; i < URLs.length; i++) {
     try {
-      // The URL is fetched
+      // The url is fetched
       const result = await fetch(URLs[i], { method: 'GET' })
 
-      // If the request fails, continue to the next URL
+      // If the request fails, continue to the next url
       if (result.status >= 400) {
         continue
       }
@@ -125,7 +125,7 @@ const download = async ({
         .update(contentBuffer)
         .digest('hex')
 
-      // If the hash does not match, continue to the next URL
+      // If the hash does not match, continue to the next url
       if (contentHash !== hash) {
         continue
       }
@@ -137,7 +137,7 @@ const download = async ({
       }
     } catch (e) {
       console.error(e)
-      // In case of any errors with this URL, continue to the next one
+      // In case of any errors with this url, continue to the next one
       continue
     }
   }
