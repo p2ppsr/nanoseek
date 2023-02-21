@@ -4,9 +4,9 @@
  * @param {object} queryResult - The query result to parse.
  * 
  * @returns {array} The retrieved url(s).
- * @throws {Error} If passed parameter query result is invalid.
+ * @throws {Error} If passed parameter query result is missing or an invalid type.
  */
-export default queryResult => {
+const getUrlFromQueryResult = queryResult => {
   if (typeof queryResult === 'undefined') {
     const e = new Error('queryResult is a required parameter!')
     e.code = 'ERR_INVALID_QUERY_PARAM'
@@ -28,3 +28,5 @@ export default queryResult => {
   }
   return res
 }
+
+export default getUrlFromQueryResult

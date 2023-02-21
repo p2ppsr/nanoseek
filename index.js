@@ -1,6 +1,6 @@
 import store from '../store' // Needs to be coded?
 
-const { getURLFromQueryResult } = require ('getURLFromQueryResult')
+const { getUrlFromQueryResult } = require ('getUrlFromQueryResult')
 const { isValidURL, getHashFromURL } = require('uhrp-url')
 const crypto = require('crypto')
 const fetch = require('isomorphic-fetch')
@@ -58,7 +58,7 @@ const resolve = async ({
   // Retrive the URL where the file can be downloaded
   // *** TBD return multiple URLs ***
   try {
-    return [getURLFromQueryResult(
+    return [getUrlFromQueryResult(
       decodedResult
     )]
   } catch (e) {
