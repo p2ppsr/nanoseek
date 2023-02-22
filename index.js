@@ -4,7 +4,7 @@ import { getUrlFromQueryResult } from 'getUrlFromQueryResult'
 import { isValidURL, getHashFromURL } from 'uhrp-url'
 import pushdrop from 'pushdrop'
 import boomerang from 'boomerang-http'
-import crypto from 'crypto'
+//import crypto from 'crypto' // not required?
 import fetch from 'isomorphic-fetch'
 
 /**
