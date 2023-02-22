@@ -1,11 +1,8 @@
-import store from './store/store' // *** TBD Needs to be coded? ***
-
-import { getUrlFromQueryResult } from 'getUrlFromQueryResult'
-import { isValidURL, getHashFromURL } from 'uhrp-url'
-import pushdrop from 'pushdrop'
-import boomerang from 'boomerang-http'
-//import crypto from 'crypto' // not required?
-import fetch from 'isomorphic-fetch'
+const { getUrlFromQueryResult } = require('getUrlFromQueryResult')
+const { isValidURL, getHashFromURL } = require('uhrp-url')
+const pushdrop = require('pushdrop')
+const boomerang = require('boomerang-http')
+const fetch = require('isomorphic-fetch')
 
 /**
  * Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
@@ -20,7 +17,7 @@ import fetch from 'isomorphic-fetch'
  */
 const resolve = async ({
   UHRPUrl,
-  confederacyHosts = [store.getState().settings.confederacyHost]
+  confederacyHost = 'https://confederacy.babbage.systems'
 } = {}) => {
 
   if (!isValidURL(UHRPUrl)) {
@@ -29,17 +26,10 @@ const resolve = async ({
     throw e
   }
 
-  if (!Array.isArray(confederacyHosts)) {
-    const e = new Error('Invalid parameter Confederacy hosts, must be an array')
-    e.code = 'ERR_INVALID_CONFEDERACY_ARRAY'
-    throw e
-  }
-
   // Use Confederacy UHRP lookup service
-  // *** TBD resolve multiple Confederacy hosts ***
   const lookupResult = await boomerang(
     'POST',
-    `${confederacyHosts[0]}/lookup`,
+    `${confederacyHost}/lookup`,
     {
       provider: 'UHRP',
       query: {
@@ -51,22 +41,26 @@ const resolve = async ({
     return null
   }
 
-  // Decode the UHRP token field
-  const decodedResult = pushdrop.decode({
-    // eslint-disable-next-line no-undef
-    script: Buffer.from(lookupResult[0].outputScript).toString('hex'), // Is Buffer form supported by PushDrop?
-    fieldFormat: 'buffer'
-  })
+  let decodedResults = []
 
-  // Retrive the url where the file can be downloaded
-  // *** TBD return multiple URLs ***
+  // Decode the UHRP token fields
   try {
-    return [getUrlFromQueryResult(
-      decodedResult
-    )]
+
+    for (let i = 0; i < lookupResult.length; i++) {
+      decodedResults.push(
+        getUrlFromQueryResult(
+          pushdrop.decode({
+            // eslint-disable-next-line no-undef
+            script: Buffer.from(lookupResult[i].outputScript).toString('hex'), // Is Buffer form supported by PushDrop?
+            fieldFormat: 'buffer'
+          })
+        )
+      )
+    }
   } catch (e) {
     throw new Error(`Error retrieving url stored in the UHRP token: ${e.message}`)
   }
+  return decodedResults
 
 }
 
@@ -82,7 +76,7 @@ const resolve = async ({
  */
 const download = async ({
   UHRPUrl,
-  confederacyHosts
+  confederacyHost = 'https://confederacy.babbage.systems'
 } = {}) => {
 
   if (!isValidURL(UHRPUrl)) {
@@ -91,23 +85,10 @@ const download = async ({
     throw e
   }
 
-  if (!Array.isArray(confederacyHosts)) {
-    const e = new Error('Invalid parameter Confederacy hosts, must be an array')
-    e.code = 'ERR_INVALID_CONFEDERACY_ARRAY'
-    throw e
-  }
-
-  // The hash is extracted from the UHRP url for later validation
-  try {
-    getHashFromURL(UHRPUrl).toString('hex')
-  } catch (e) {
-    throw new Error(`Error invalid UHRP url: ${e.message}`)
-  }
-
   const hash = getHashFromURL(UHRPUrl).toString('hex')
 
   // A list of potential download URLs are resolved
-  const URLs = await resolve({ UHRPUrl, confederacyHosts })
+  const URLs = await resolve({ UHRPUrl, confederacyHost })
 
   // Download is attempted from each url until successful
   for (let i = 0; i < URLs.length; i++) {
@@ -155,4 +136,4 @@ const download = async ({
 
 }
 
-export default { resolve, download }
+module.exports = { resolve, download }

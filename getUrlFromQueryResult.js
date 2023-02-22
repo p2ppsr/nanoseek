@@ -17,17 +17,7 @@
     e.code = 'ERR_INVALID_QUERY_TYPE'
     throw e
   }
-  const OP_CHECKSIG = 172
-  const res = [
-    // eslint-disable-next-line no-undef
-    [...Buffer.from(queryResult.lockingPublicKey, 'hex')],
-    [OP_CHECKSIG]
-  ]
-  // Create the url(s) according to the valid format
-  for (const field of queryResult.fields) {
-    res.push([...field])
-  }
-  return res
+  return  queryResult.fields[5].toString('utf8')
 }
 
-export default getUrlFromQueryResult
+module.exports = getUrlFromQueryResult
