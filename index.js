@@ -1,4 +1,4 @@
-import store from '../store' // *** TBD Needs to be coded? ***
+import store from './store' // *** TBD Needs to be coded? ***
 
 const { getUrlFromQueryResult } = require ('getUrlFromQueryResult')
 const { isValidURL, getHashFromURL } = require('uhrp-url')
