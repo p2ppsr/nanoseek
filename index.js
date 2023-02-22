@@ -1,9 +1,11 @@
-import store from './store' // *** TBD Needs to be coded? ***
+import store from './store/store' // *** TBD Needs to be coded? ***
 
-const { getUrlFromQueryResult } = require ('getUrlFromQueryResult')
-const { isValidURL, getHashFromURL } = require('uhrp-url')
-const crypto = require('crypto')
-const fetch = require('isomorphic-fetch')
+import { getUrlFromQueryResult } from 'getUrlFromQueryResult'
+import { isValidURL, getHashFromURL } from 'uhrp-url'
+import pushdrop from 'pushdrop'
+import boomerang from 'boomerang-http'
+import crypto from 'crypto'
+import fetch from 'isomorphic-fetch'
 
 /**
  * Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
@@ -27,7 +29,7 @@ const resolve = async ({
     throw e
   }
 
-  if (!isArray(confederacyHosts)) {
+  if (!Array.isArray(confederacyHosts)) {
     const e = new Error('Invalid parameter Confederacy hosts, must be an array')
     e.code = 'ERR_INVALID_CONFEDERACY_ARRAY'
     throw e
@@ -51,6 +53,7 @@ const resolve = async ({
 
   // Decode the UHRP token field
   const decodedResult = pushdrop.decode({
+    // eslint-disable-next-line no-undef
     script: Buffer.from(lookupResult[0].outputScript).toString('hex'), // Is Buffer form supported by PushDrop?
     fieldFormat: 'buffer'
   })
@@ -88,7 +91,7 @@ const download = async ({
     throw e
   }
 
-  if (!isArray(confederacyHosts)) {
+  if (!Array.isArray(confederacyHosts)) {
     const e = new Error('Invalid parameter Confederacy hosts, must be an array')
     e.code = 'ERR_INVALID_CONFEDERACY_ARRAY'
     throw e
@@ -96,10 +99,12 @@ const download = async ({
 
   // The hash is extracted from the UHRP url for later validation
   try {
-    const hash = getHashFromURL(UHRPUrl).toString('hex')
+    getHashFromURL(UHRPUrl).toString('hex')
   } catch (e) {
     throw new Error(`Error invalid UHRP url: ${e.message}`)
   }
+
+  const hash = getHashFromURL(UHRPUrl).toString('hex')
 
   // A list of potential download URLs are resolved
   const URLs = await resolve({ UHRPUrl, confederacyHosts })
@@ -117,6 +122,7 @@ const download = async ({
 
       // The body is loaded into a buffer
       const blob = await result.blob()
+      // eslint-disable-next-line no-undef
       const contentBuffer = Buffer.from(await blob.arrayBuffer())
 
       // The hash of the buffer is calculated
@@ -149,4 +155,4 @@ const download = async ({
 
 }
 
-module.exports = { resolve, download }
+export default { resolve, download }

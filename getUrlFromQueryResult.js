@@ -6,7 +6,7 @@
  * @returns {array} The retrieved url(s).
  * @throws {Error} If passed parameter query result is missing or an invalid type.
  */
-const getUrlFromQueryResult = queryResult => {
+ const getUrlFromQueryResult = queryResult => {
   if (typeof queryResult === 'undefined') {
     const e = new Error('queryResult is a required parameter!')
     e.code = 'ERR_INVALID_QUERY_PARAM'
@@ -19,6 +19,7 @@ const getUrlFromQueryResult = queryResult => {
   }
   const OP_CHECKSIG = 172
   const res = [
+    // eslint-disable-next-line no-undef
     [...Buffer.from(queryResult.lockingPublicKey, 'hex')],
     [OP_CHECKSIG]
   ]
