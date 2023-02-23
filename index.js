@@ -9,7 +9,7 @@ const fetch = require('isomorphic-fetch')
  *
  * @param {Object} obj All parameters are passed in an object.
  * @param {String} obj.UHRPUrl The UHRP url to resolve.
- * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
+ * @param {string} obj.confederacyHost HTTPS Url for for the Confederacy host with default setting.
  *
  * @return {Array<String>} An array of HTTP URLs where content can be downloaded.
  * @throws {Error} If UHRP url parameter invalid or Confederacy hosts is not an array
