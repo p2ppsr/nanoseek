@@ -1,4 +1,4 @@
-const { getUrlFromQueryResult } = require('getUrlFromQueryResult')
+const { getUrlFromQueryResult } = require('./getUrlFromQueryResult')
 const { isValidURL, getHashFromURL } = require('uhrp-url')
 const pushdrop = require('pushdrop')
 const boomerang = require('boomerang-http')
@@ -19,7 +19,6 @@ const resolve = async ({
   UHRPUrl,
   confederacyHost = 'https://confederacy.babbage.systems'
 } = {}) => {
-
   if (!isValidURL(UHRPUrl)) {
     const e = new Error('Invalid parameter UHRP url')
     e.code = 'ERR_INVALID_UHRP_URL'
@@ -41,11 +40,10 @@ const resolve = async ({
     return null
   }
 
-  let decodedResults = []
+  const decodedResults = []
 
   // Decode the UHRP token fields
   try {
-
     for (let i = 0; i < lookupResult.length; i++) {
       decodedResults.push(
         getUrlFromQueryResult(
@@ -61,7 +59,6 @@ const resolve = async ({
     throw new Error(`Error retrieving url stored in the UHRP token: ${e.message}`)
   }
   return decodedResults
-
 }
 
 /**
@@ -78,7 +75,6 @@ const download = async ({
   UHRPUrl,
   confederacyHost = 'https://confederacy.babbage.systems'
 } = {}) => {
-
   if (!isValidURL(UHRPUrl)) {
     const e = new Error('Invalid parameter UHRP url')
     e.code = 'ERR_INVALID_UHRP_URL'
@@ -133,7 +129,6 @@ const download = async ({
   const e = new Error(`Unable to download content from ${URL}`)
   e.code = 'ERR_INVALID_DOWNLOAD_URL'
   throw e
-
 }
 
 module.exports = { resolve, download }
