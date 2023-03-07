@@ -1,8 +1,8 @@
 const { getUrlFromQueryResult } = require('./getUrlFromQueryResult')
 const { isValidURL, getHashFromURL } = require('uhrp-url')
 const pushdrop = require('pushdrop')
-const boomerang = require('boomerang-http')
 const fetch = require('isomorphic-fetch')
+const PacketPay = require('@packetpay/js')
 
 /**
  * Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
@@ -17,7 +17,8 @@ const fetch = require('isomorphic-fetch')
  */
 const resolve = async ({
   UHRPUrl,
-  confederacyHost = 'https://confederacy.babbage.systems'
+  confederacyHost = 'https://confederacy.babbage.systems',
+  clientPrivateKey
 } = {}) => {
   if (!isValidURL(UHRPUrl)) {
     const e = new Error('Invalid parameter UHRP url')
@@ -26,16 +27,24 @@ const resolve = async ({
   }
 
   // Use Confederacy UHRP lookup service
-  const lookupResult = await boomerang(
-    'POST',
-    `${confederacyHost}/lookup`,
-    {
+  const response = await PacketPay(`${confederacyHost}/lookup`, {
+    method: 'POST',
+    body: {
       provider: 'UHRP',
       query: {
         UHRPUrl
       }
     }
-  )
+  }, { clientPrivateKey })
+  const lookupResult = JSON.parse(Buffer.from(response.body).toString('utf8'))
+
+  // Check for any errors returned and create error to notify bugsnag.
+  if (lookupResult.status && lookupResult.status === 'error') {
+    const e = new Error(lookupResult.description)
+    e.code = lookupResult.code || 'ERR_UNKNOWN'
+    throw e
+  }
+
   if (lookupResult.length < 1) {
     return null
   }
