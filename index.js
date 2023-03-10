@@ -92,6 +92,7 @@ const download = async ({
   }
 
   const hash = getHashFromURL(UHRPUrl).toString('hex')
+  if (UHRPUrl.startsWith('uhrp:')) UHRPUrl = UHRPUrl.slice(5)
 
   // A list of potential download URLs are resolved
   const URLs = await resolve({ UHRPUrl, confederacyHost })
