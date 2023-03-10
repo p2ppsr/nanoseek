@@ -17,7 +17,7 @@ const getUrlFromQueryResult = queryResult => {
     e.code = 'ERR_INVALID_QUERY_TYPE'
     throw e
   }
-  return queryResult.fields[5].toString('utf8')
+  return queryResult.fields[4].toString('utf8')
 }
 
 module.exports = getUrlFromQueryResult

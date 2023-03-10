@@ -1,4 +1,4 @@
-const { getUrlFromQueryResult } = require('./getUrlFromQueryResult')
+const getUrlFromQueryResult = require('./getUrlFromQueryResult')
 const { isValidURL, getHashFromURL } = require('uhrp-url')
 const pushdrop = require('pushdrop')
 const fetch = require('isomorphic-fetch')
