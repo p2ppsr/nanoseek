@@ -28,7 +28,7 @@
     "isomorphic-fetch": "^3.0.0",
     "lint": "^0.8.19",
     "pushdrop": "^0.1.16",
-    "uhrp-url": "^0.1.3"
+    "uhrp-url": "^0.1.4"
   },
   "devDependencies": {
     "documentation": "^13.2.5",

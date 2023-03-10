@@ -1,5 +1,5 @@
 const getUrlFromQueryResult = require('./getUrlFromQueryResult')
-const { isValidURL, getHashFromURL } = require('uhrp-url')
+const { isValidURL, getHashFromURL, getURLForHash } = require('uhrp-url')
 const pushdrop = require('pushdrop')
 const fetch = require('isomorphic-fetch')
 const PacketPay = require('@packetpay/js')
@@ -91,8 +91,9 @@ const download = async ({
     throw e
   }
 
-  const hash = getHashFromURL(UHRPUrl).toString('hex')
-  if (UHRPUrl.startsWith('uhrp:')) UHRPUrl = UHRPUrl.slice(5)
+  // Ensure the UHRPUrl is standardized without any prefixes
+  const hash = getHashFromURL(UHRPUrl)
+  UHRPUrl = getURLForHash(hash)
 
   // A list of potential download URLs are resolved
   const URLs = await resolve({ UHRPUrl, confederacyHost })
@@ -120,7 +121,7 @@ const download = async ({
         .digest('hex')
 
       // If the hash does not match, continue to the next url
-      if (contentHash !== hash) {
+      if (contentHash !== hash.toString('hex')) {
         continue
       }
 
