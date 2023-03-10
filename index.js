@@ -3,6 +3,7 @@ const { isValidURL, getHashFromURL } = require('uhrp-url')
 const pushdrop = require('pushdrop')
 const fetch = require('isomorphic-fetch')
 const PacketPay = require('@packetpay/js')
+const crypto = require('crypto')
 
 /**
  * Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
