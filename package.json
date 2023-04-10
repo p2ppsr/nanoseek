@@ -27,7 +27,7 @@
     "crypto": "^1.0.1",
     "isomorphic-fetch": "^3.0.0",
     "lint": "^0.8.19",
-    "pushdrop": "^0.1.16",
+    "pushdrop": "^0.1.17",
     "uhrp-url": "^0.1.4"
   },
   "devDependencies": {
