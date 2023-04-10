@@ -59,7 +59,7 @@ const resolve = async ({
         getUrlFromQueryResult(
           pushdrop.decode({
             // eslint-disable-next-line no-undef
-            script: Buffer.from(lookupResult[i].outputScript).toString('hex'), // Is Buffer form supported by PushDrop?
+            script: lookupResult[i].outputScript,
             fieldFormat: 'buffer'
           })
         )
