@@ -38,38 +38,59 @@ link.click()
     *   [Parameters](#parameters)
 *   [download](#download)
     *   [Parameters](#parameters-1)
+*   [getUrlFromQueryResult](#geturlfromqueryresult)
+    *   [Parameters](#parameters-2)
 
 ### resolve
 
-Locates HTTP URLs where content can be downloaded. Uses trusted hosts when possible.
+Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
 
 #### Parameters
 
 *   `obj` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** All parameters are passed in an object. (optional, default `{}`)
 
-    *   `obj.URL` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The UHRP URL to resolve.
-    *   `obj.trustedHosts` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** A set of UHRP hosts given preferential treatmeant. By default, the Babbage host is trusted. Provide an empty array to resolve all URLs. (optional, default `['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf']`)
-    *   `obj.limit` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The number of results to return. (optional, default `10`)
-    *   `obj.offset` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The offset into the total number of results. (optional, default `0`)
-    *   `obj.bridgeportResolvers` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)?** Specify custom Bridgeport resolvers
+    *   `obj.UHRPUrl` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The UHRP url to resolve.
+    *   `obj.confederacyHost` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** HTTPS URL for for the Confederacy host with default setting. (optional, default `'https://confederacy.babbage.systems'`)
+    *   `obj.clientPrivateKey` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Key used to resolve the file (for payment)
+
+<!---->
+
+*   Throws **[Error](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)** If UHRP url parameter invalid or Confederacy hosts is not an array
+    or there is an error retrieving url(s) stored in the UHRP token.
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** An array of HTTP URLs where content can be downloaded.
 
 ### download
 
-Downloads content from a UHRP URL and returns it as a buffer with its mime type, after validating that the hash is correct. Uses trusted hosts when possible.
+Downloads content from a UHRP url and returns it as a buffer with its mime type, after validating that the hash is correct. It uses the passed Confederacy hosts or the default one.
 
 #### Parameters
 
 *   `obj` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** All parameters are passed in an object. (optional, default `{}`)
 
-    *   `obj.URL` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The UHRP URL to download.
-    *   `obj.trustedHosts` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** A set of UHRP hosts given preferential treatmeant. By default, the Babbage host is trusted. Provide an empty array to disable trusted host resolution. (optional, default `['15RLMCYZ738Y3cBb56yDSWa7TkAFxSQtyf']`)
-    *   `obj.bridgeportResolvers` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)?** Specify custom Bridgeport resolvers
-    *   `obj.limit` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The maximum number of URLs to try downloading from before giving up. (optional, default `10`)
-    *   `obj.offset` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The offset into the list of potential download URLs to start from. (optional, default `0`)
+    *   `obj.UHRPUrl` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The UHRP url to download.
+    *   `obj.confederacyHost` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The confederacy host URL (optional, default `'https://confederacy.babbage.systems'`)
+    *   `obj.clientPrivateKey` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Key used to resolve the file (for payment)
+
+<!---->
+
+*   Throws **[Error](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)** If UHRP url parameter invalid or Confederacy hosts is not an array or hash is invalid or unable to download using retrieved url(s)
 
 Returns **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** An object containing "data" (a buffer) and "mimeType" for the content.
+
+### getUrlFromQueryResult
+
+This function takes a query result and returns the associated url(s).
+
+#### Parameters
+
+*   `queryResult` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The query result to parse.
+
+<!---->
+
+*   Throws **[Error](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)** If passed parameter query result is missing or an invalid type.
+
+Returns **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** The retrieved url(s).
 
 ## License
 

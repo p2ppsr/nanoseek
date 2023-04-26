@@ -10,7 +10,8 @@ const crypto = require('crypto')
  *
  * @param {Object} obj All parameters are passed in an object.
  * @param {String} obj.UHRPUrl The UHRP url to resolve.
- * @param {string} obj.confederacyHost HTTPS Url for for the Confederacy host with default setting.
+ * @param {string} obj.confederacyHost HTTPS URL for for the Confederacy host with default setting.
+ * @param {String} [obj.clientPrivateKey] Key used to resolve the file (for payment)
  *
  * @return {Array<String>} An array of HTTP URLs where content can be downloaded.
  * @throws {Error} If UHRP url parameter invalid or Confederacy hosts is not an array
@@ -76,14 +77,16 @@ const resolve = async ({
  *
  * @param {Object} obj All parameters are passed in an object.
  * @param {String} obj.UHRPUrl The UHRP url to download.
- * @param {Array[Object]} obj.confederacyHosts Array of Confederacy hosts.
+ * @param {String} obj.confederacyHost The confederacy host URL
+ * @param {String} [obj.clientPrivateKey] Key used to resolve the file (for payment)
  *
  * @return {Object} An object containing "data" (a buffer) and "mimeType" for the content.
  * @throws {Error} If UHRP url parameter invalid or Confederacy hosts is not an array or hash is invalid or unable to download using retrieved url(s)
  */
 const download = async ({
   UHRPUrl,
-  confederacyHost = 'https://confederacy.babbage.systems'
+  confederacyHost = 'https://confederacy.babbage.systems',
+  clientPrivateKey
 } = {}) => {
   if (!isValidURL(UHRPUrl)) {
     const e = new Error('Invalid parameter UHRP url')
@@ -96,7 +99,7 @@ const download = async ({
   UHRPUrl = getURLForHash(hash)
 
   // A list of potential download URLs are resolved
-  const URLs = await resolve({ UHRPUrl, confederacyHost })
+  const URLs = await resolve({ UHRPUrl, confederacyHost, clientPrivateKey })
 
   // Download is attempted from each url until successful
   for (let i = 0; i < URLs.length; i++) {
