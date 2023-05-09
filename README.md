@@ -19,13 +19,10 @@ const { download } = require('nanoseek')
 const downloadURL = 'XUTTCy7KcAn1MdU8SksihCqTnzXc76gbWNXqVMJ5rN1swFTbqbbV'
 // The confederacy host URL
 const host = 'https://confederacy.babbage.systems'
-// Client's identity
-const key = '...'
 
 const { mimeType, data } = await download({ 
     UHRPUrl: downloadURL, 
-    confederacyHost: host, 
-    clientPrivateKey: key })
+    confederacyHost: host })
 
 // Create a Blob and download the file with the browser
 const blob = new Blob([data], { type: mimeType })
