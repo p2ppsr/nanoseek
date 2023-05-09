@@ -16,9 +16,13 @@ The below code can be used in a browser to download a UHRP file, given the URL:
 const { download } = require('nanoseek')
 
 // URL of the file you want to download
-const downloadURL = 'uhrp:XUTTCy7KcAn1MdU8SksihCqTnzXc76gbWNXqVMJ5rN1swFTbqbbV'
+const downloadURL = 'XUTTCy7KcAn1MdU8SksihCqTnzXc76gbWNXqVMJ5rN1swFTbqbbV'
+// The confederacy host URL
+const host = 'https://confederacy.babbage.systems'
 
-const { mimeType, data } = await download({ URL: downloadURL })
+const { mimeType, data } = await download({ 
+    UHRPUrl: downloadURL, 
+    confederacyHost: host })
 
 // Create a Blob and download the file with the browser
 const blob = new Blob([data], { type: mimeType })
