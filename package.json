@@ -7,8 +7,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "doc": "documentation readme index.js --section=API",
-    "tonpm": "",
-    "tonone": ""
+    "tonpm": "npm run tonone && npm i pushdrop @packetpay/js --silent",
+    "tonone": "npm remove pushdrop @packetpay/js --silent"
   },
   "repository": {
     "type": "git",
@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/p2ppsr/nanoseek#readme",
   "dependencies": {
-    "@packetpay/js": "^0.1.11",
+    "@packetpay/js": "^0.1.12",
     "isomorphic-fetch": "^3.0.0",
     "lint": "^0.8.19",
-    "pushdrop": "^0.1.17",
+    "pushdrop": "^0.1.25",
     "uhrp-url": "^0.1.4"
   },
   "devDependencies": {
