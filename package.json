@@ -6,9 +6,7 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "doc": "documentation readme index.js --section=API",
-    "tonpm": "npm run tonone && npm i pushdrop @packetpay/js --silent",
-    "tonone": "npm remove pushdrop @packetpay/js --silent"
+    "doc": "documentation readme index.js --section=API"
   },
   "repository": {
     "type": "git",
