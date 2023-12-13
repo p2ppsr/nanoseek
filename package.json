@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/p2ppsr/nanoseek#readme",
   "dependencies": {
-    "@packetpay/js": "^0.1.18",
+    "@packetpay/js": "^0.1.19",
     "isomorphic-fetch": "^3.0.0",
     "lint": "^0.8.19",
     "pushdrop": "^0.1.30",
