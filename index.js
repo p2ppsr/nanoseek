@@ -101,6 +101,13 @@ const download = async ({
   // A list of potential download URLs are resolved
   const URLs = await resolve({ UHRPUrl, confederacyHost, clientPrivateKey })
 
+  // Make sure we get a list of potential URLs before trying to fetch
+  if (!URLs || URLs.length === 0) {
+    const e = new Error('Unable to resolve URLs from UHRP URL!')
+    e.code = 'ERR_NO_RESOLVED_URLS_FOUND'
+    throw e
+  }
+
   // Download is attempted from each url until successful
   for (let i = 0; i < URLs.length; i++) {
     try {
