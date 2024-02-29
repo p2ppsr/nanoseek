@@ -1,6 +1,6 @@
 {
   "name": "nanoseek",
-  "version": "0.1.54",
+  "version": "0.1.55",
   "description": "UHRP Downloader",
   "main": "index.js",
   "scripts": {
