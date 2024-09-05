@@ -1,5 +1,6 @@
 // Export all types
 export * from './types/types';
+import fetch from 'cross-fetch';
 // Import getUrlFromQueryResult from the correct path
 import { getUrlFromQueryResult } from './getUrlFromQueryResult';
 
