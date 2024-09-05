@@ -1,22 +1,54 @@
 {
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "es2021": true
-    },
-    "extends": [
-        "eslint:recommended",
-        "plugin:react/recommended"
-    ],
-    "parserOptions": {
-        "ecmaFeatures": {
-            "jsx": true
-        },
-        "ecmaVersion": 12
-    },
-    "plugins": [
-        "react"
-    ],
-    "rules": {
-    }
+  "root": true,
+  "env": {
+    "jest": true,
+    "node": true,
+    "browser": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "globals": {
+    "RequestInit": "readonly",
+    "__webpack_require__": "readonly",
+    "__webpack_module_cache__": "readonly",
+    "__webpack_modules__": "readonly",
+    "__webpack_exports__": "readonly",
+    "globalThis": "readonly",
+    "WebTransport": "readonly",
+    "attachEvent": "readonly",
+    "define": "readonly"
+  },
+  "rules": {
+    "semi": ["error", "always"],
+    "space-before-function-paren": ["error", {
+      "anonymous": "always",
+      "named": "never",
+      "asyncArrow": "always"
+    }],
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "no-tabs": "off",
+    "@typescript-eslint/no-require-imports": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-unused-expressions": "off",
+    "@typescript-eslint/no-unused-expressions": "off",
+    "no-sequences": "off",
+    "no-void": "off",
+    "no-mixed-operators": "off",
+    "no-return-assign": "off",
+    "@typescript-eslint/no-this-alias": "off",
+    "no-new-func": "warn",
+    "camelcase": ["error", { 
+      "allow": ["^__webpack_", "^globalThis", "connect_error", "toJSON_old", "created_at", "updated_at", "shr64_hi", "shr64_lo", "_open_number", "_saved_assembler", "__unused_webpack_module", "Object_keys"]
+    }],
+    "no-prototype-builtins": "off",
+    "no-useless-escape": "off",
+    "no-empty": ["warn", { "allowEmptyCatch": true }],
+    "no-case-declarations": "off"
+  },
+  "ignorePatterns": ["dist/"]
 }
