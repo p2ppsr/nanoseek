@@ -27,7 +27,7 @@ interface LookupResult {
 
 export async function resolve({ UHRPUrl, confederacyHost = 'https://confederacy.babbage.systems', clientPrivateKey }: ResolveParams): Promise<string[] | null> {
   if (!isValidURL(UHRPUrl)) {
-    throw new Error('Invalid parameter UHRP URL');
+    throw new Error('Invalid parameter UHRP URL')
   }
 
   const response: { body: Buffer } = await PacketPay(`${confederacyHost}/lookup`, {
@@ -41,14 +41,14 @@ export async function resolve({ UHRPUrl, confederacyHost = 'https://confederacy.
   const lookupResult: LookupResult = JSON.parse(Buffer.from(response.body).toString('utf8'))
 
   if (lookupResult.status === 'error') {
-    const e: ErrorWithCode = new Error(lookupResult.description || 'Unknown error');
-    e.code = lookupResult.code || 'ERR_UNKNOWN';
-    throw e;
+    const e: ErrorWithCode = new Error(lookupResult.description || 'Unknown error')
+    e.code = lookupResult.code || 'ERR_UNKNOWN'
+    throw e
   }
 
-  if (!Array.isArray(lookupResult) || lookupResult.length < 1) return null;
+  if (!Array.isArray(lookupResult) || lookupResult.length < 1) return null
 
-  const decodedResults: string[] = [];
+  const decodedResults: string[] = []
 
   for (const result of lookupResult) {
     const decodedResult = pushdrop.decode({
@@ -62,7 +62,7 @@ export async function resolve({ UHRPUrl, confederacyHost = 'https://confederacy.
     }
   }
 
-  return decodedResults.length > 0 ? decodedResults : null;
+  return decodedResults.length > 0 ? decodedResults : null
 }
 
 import { DownloadOptions, DownloadResult } from './types/types'
