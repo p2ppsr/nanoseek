@@ -6,8 +6,4 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest'
   }
-<<<<<<< HEAD
-};
-=======
 }
->>>>>>> 5bd27a03adc0ce12f526cbe99f1cb66f6aad4acf
