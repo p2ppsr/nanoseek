@@ -1,15 +1,15 @@
-import * as indexModule from './src/index';
-import PacketPay from '@packetpay/js';
-import { isValidURL } from 'uhrp-url';
-import fetch, { Response, Headers } from 'cross-fetch';
-import * as pushdrop from 'pushdrop';
-import { getUrlFromQueryResult } from './src/getUrlFromQueryResult';
+import * as indexModule from './src/index'
+import PacketPay from '@packetpay/js'
+import { isValidURL } from 'uhrp-url'
+import fetch, { Response, Headers } from 'cross-fetch'
+import * as pushdrop from 'pushdrop'
+import { getUrlFromQueryResult } from './src/getUrlFromQueryResult'
 
-jest.mock('@packetpay/js');
-jest.mock('uhrp-url');
-jest.mock('cross-fetch');
-jest.mock('pushdrop');
-jest.mock('./src/getUrlFromQueryResult');
+jest.mock('@packetpay/js')
+jest.mock('uhrp-url')
+jest.mock('cross-fetch')
+jest.mock('pushdrop')
+jest.mock('./src/getUrlFromQueryResult')
 
 describe('NanoSeek', () => {
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe('NanoSeek', () => {
   describe('download function', () => {
     test('should download content successfully', async () => {
       const mockArrayBuffer = new ArrayBuffer(8);
-      const mockBlob = new Blob([mockArrayBuffer]);
+      const mockBlob = new global.Blob([mockArrayBuffer]); // Correct instantiation
       (fetch as jest.Mock).mockResolvedValueOnce({
         status: 200,
         blob: async () => new Blob([new Uint8Array([1, 2, 3])]),
@@ -89,8 +89,8 @@ describe('NanoSeek', () => {
       (pushdrop.decode as jest.Mock).mockImplementationOnce(() => {
         throw new Error('Decoding error');
       });
-      const result = await indexModule.resolve({ UHRPUrl: 'uhrp://example.com' });
-      expect(result).toBeNull();
+      await expect(indexModule.resolve({ UHRPUrl: 'uhrp://example.com' }))
+        .rejects.toThrow('Decoding error');
     });
   });
-});
+})

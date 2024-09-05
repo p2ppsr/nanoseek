@@ -1,5 +1,5 @@
-const path = require('path');
-const webpack = require('webpack');
+const path = require('path')
+const webpack = require('webpack')
 
 module.exports = {
   mode: 'production',
@@ -21,7 +21,7 @@ module.exports = {
       https: require.resolve('https-browserify'),
       os: require.resolve('os-browserify/browser'),
       buffer: require.resolve('buffer'),
-      vm: require.resolve('vm-browserify'),
+      vm: require.resolve('vm-browserify')
     }
   },
   module: {
@@ -41,11 +41,11 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       process: 'process/browser',
-      Buffer: ['buffer', 'Buffer'],
-    }),
+      Buffer: ['buffer', 'Buffer']
+    })
   ],
   optimization: {
-    minimize: true,
+    minimize: true
   },
   devtool: 'source-map',
   performance: {
@@ -53,4 +53,4 @@ module.exports = {
     maxEntrypointSize: 512000,
     maxAssetSize: 512000
   }
-};
+}
