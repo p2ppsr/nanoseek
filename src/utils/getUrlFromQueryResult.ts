@@ -11,14 +11,14 @@ export type QueryResult = {
  */
 export function getUrlFromQueryResult(queryResult: QueryResult): string {
   if (typeof queryResult === 'undefined') {
-    const e = new Error('queryResult is a required parameter!')
-    e.name = 'ERR_INVALID_QUERY_PARAM'
-    throw e
+    const e = new Error('queryResult is a required parameter!');
+    e.name = 'ERR_INVALID_QUERY_PARAM';
+    throw e;
   }
   if (typeof queryResult !== 'object' || queryResult === null) {
-    const e = new Error(`queryResult must be an object, but ${typeof queryResult} was given!`)
-    e.name = 'ERR_INVALID_QUERY_TYPE'
-    throw e
+    const e = new Error(`queryResult must be an object, but ${typeof queryResult} was given!`);
+    e.name = 'ERR_INVALID_QUERY_TYPE';
+    throw e;
   }
-  return queryResult.fields[4].toString('utf8')
+  return queryResult.fields[4].toString('utf8');
 }

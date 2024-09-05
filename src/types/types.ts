@@ -1,6 +1,6 @@
 // types.ts
-import type { UHRPUrl as ImportedUHRPUrl } from 'uhrp-url'
-import type { PacketPayClient as ImportedPacketPayClient } from '@packetpay/js'
+import type { UHRPUrl as ImportedUHRPUrl } from 'uhrp-url';
+import type { PacketPayClient as ImportedPacketPayClient } from '@packetpay/js';
 
 export interface DownloadOptions {
   UHRPUrl: string
@@ -16,8 +16,8 @@ export interface DownloadResult {
 export type DownloadFunction = (options: DownloadOptions) => Promise<DownloadResult>
 
 // These types are used for type checking and are imported from their respective packages
-export type { UHRPUrl } from 'uhrp-url'
-export type { PacketPayClient } from '@packetpay/js'
+export type { UHRPUrl } from 'uhrp-url';
+export type { PacketPayClient } from '@packetpay/js';
 export type QueryResult = Record<string, unknown>
 
 // Need to replace empty interfaces with more specific types
