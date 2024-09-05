@@ -1,46 +1,37 @@
 // Export all types
 export * from './types/types';
+// Import getUrlFromQueryResult from the correct path
+import { getUrlFromQueryResult } from './getUrlFromQueryResult';
 
-import getUrlFromQueryResult from '../getUrlFromQueryResult';
+import * as pushdrop from 'pushdrop'
+import PacketPay from '@packetpay/js'
+import * as crypto from 'crypto'
+import { getHashFromURL, getURLForHash, isValidURL } from 'uhrp-url' // Adjust the import path as needed
 
-import * as pushdrop from 'pushdrop';
-console.log('pushdrop module:', pushdrop);
-import PacketPay from '@packetpay/js';
-import * as crypto from 'crypto';
-import { getHashFromURL, getURLForHash, isValidURL } from 'uhrp-url'; // Adjust the import path as needed
-
-// 'crypto' is available globally in Node.js, so no need to redeclare
-// 'fetch' is available globally in the browser, no need to redeclare
-
-interface ResolveParams {
-  UHRPUrl: string;
-  confederacyHost?: string;
-  clientPrivateKey?: string;
+// Define types for error objects
+interface ErrorWithCode extends Error {
+  code?: string
 }
 
-/**
- * Locates HTTP URLs where content can be downloaded.
- *
- * @param {Object} obj - All parameters are passed in an object.
- * @param {String} obj.UHRPUrl - The UHRP URL to resolve.
- * @param {string} obj.confederacyHost - HTTPS URL for the Confederacy host with default setting.
- * @param {String} [obj.clientPrivateKey] - Key used to resolve the file (for payment).
- * 
- * @return {Array<String>} - An array of HTTP URLs where content can be downloaded.
- * @throws {Error} - If UHRP URL is invalid, or there is an error retrieving URLs from UHRP token.
- */
-export async function resolve({ UHRPUrl, confederacyHost = 'https://confederacy.babbage.systems', clientPrivateKey }: ResolveParams): Promise<string[] | null> {
-  console.log('resolve():UHRPUrl=', UHRPUrl);
-  console.log('resolve():confederacyHost=', confederacyHost);
-  console.log('resolve():clientPrivateKey=', clientPrivateKey);
+interface ResolveParams {
+  UHRPUrl: string
+  confederacyHost?: string
+  clientPrivateKey?: string
+}
 
+interface LookupResult {
+  status: string
+  description?: string
+  code?: string
+  [key: string]: any // For other potential properties
+}
+
+export async function resolve({ UHRPUrl, confederacyHost = 'https://confederacy.babbage.systems', clientPrivateKey }: ResolveParams): Promise<string[] | null> {
   if (!isValidURL(UHRPUrl)) {
-    console.log('resolve():Invalid UHRP URL');
-    throw new Error('Invalid parameter UHRP URL');
+    throw new Error('Invalid parameter UHRP URL')
   }
 
-  console.log('resolve():call PacketPay()');
-  let response;
+  let response: { body: Buffer }
   try {
     response = await PacketPay(`${confederacyHost}/lookup`, {
       method: 'POST',
@@ -48,123 +39,83 @@ export async function resolve({ UHRPUrl, confederacyHost = 'https://confederacy.
         provider: 'UHRP',
         query: { UHRPUrl }
       }
-    }, { clientPrivateKey });
-    console.log('resolve():called PacketPay()');
+    }, { clientPrivateKey })
   } catch (error) {
-    console.error('Error in PacketPay:', error);
-    throw error;
+    console.error('Error in PacketPay:', error)
+    throw error
   }
   
-  let lookupResult;
+  let lookupResult: LookupResult
   try {
-    lookupResult = JSON.parse(Buffer.from(response.body).toString('utf8'));
-    console.log('resolve():lookupResult=', lookupResult);
+    lookupResult = JSON.parse(Buffer.from(response.body).toString('utf8'))
   } catch (error) {
-    console.error('Error parsing lookupResult:', error);
-    throw error;
+    console.error('Error parsing lookupResult:', error)
+    throw error
   }
 
   if (lookupResult.status === 'error') {
-    const e = new Error(lookupResult.description) as any;
-    e.code = lookupResult.code || 'ERR_UNKNOWN';
-    throw e;
+    const e: ErrorWithCode = new Error(lookupResult.description || 'Unknown error')
+    e.code = lookupResult.code || 'ERR_UNKNOWN'
+    throw e
   }
 
-  if (lookupResult.length < 1) return null;
+  if (!Array.isArray(lookupResult) || lookupResult.length < 1) return null
 
-  const decodedResults: string[] = [];
+  const decodedResults: string[] = []
 
   for (const result of lookupResult) {
-    console.log('resolve():call pushdrop.decode():result=', result);
-    console.log('resolve():call pushdrop.decode():result.outputScript=', result.outputScript);
-    let decodedResult;
     try {
-      decodedResult = pushdrop.decode({
+      const decodedResult = pushdrop.decode({
         script: result.outputScript,
         fieldFormat: 'buffer'
-      });
+      })
+
+      const url = getUrlFromQueryResult(decodedResult)
+      if (url) {
+        decodedResults.push(url)
+      }
     } catch (error) {
-      console.error('Error decoding script:', error);
-      continue; // Skip this iteration and move to the next result
-    }
-    console.log('resolve():decodedResult=', decodedResult);
-    if (decodedResult.op === 'advertise') {
-      const url = getUrlFromQueryResult(decodedResult.url);
-      decodedResults.push(url);
+      console.error('Error decoding script:', error)
+      continue
     }
   }
 
-  return decodedResults.length > 0 ? decodedResults : null;
-};
-
-// Import types
-import { DownloadOptions, DownloadResult } from './types/types';
-
-// Update the download function signature to use the imported types
-export async function download(options: DownloadOptions): Promise<DownloadResult> {
-  console.log("Using local nanoseek download function");
-  console.log("download():call isValidURL():options=", options);
-  console.log("download():call isValidURL():UHRPUrl=", options.UHRPUrl);
-
-  if (!isValidURL(options.UHRPUrl)) {
-    throw new Error("Invalid UHRP URL");
-  }
-
-  console.log('download():isValidURL');
-  const hash = getHashFromURL(options.UHRPUrl);
-  options.UHRPUrl = getURLForHash(hash);
-  console.log('download():hash=', hash);
-  console.log('download():UHRPUrl=', options.UHRPUrl);
-  console.log('download():clientPrivateKey=', options.clientPrivateKey);
-
-  const URLs = await resolve({ UHRPUrl: options.UHRPUrl, confederacyHost: options.confederacyHost, clientPrivateKey: options.clientPrivateKey });
-  if (!URLs || URLs.length === 0) {
-    const e = new Error('Unable to resolve URLs from UHRP URL!') as any;
-    e.code = 'ERR_NO_RESOLVED_URLS_FOUND';
-    throw e;
-  }
-  console.log('download():URLs=', URLs);
-
-  for (const url of URLs) {
-    try {
-      const result = await fetch(url, { method: 'GET' });
-      console.log('download():result=', result);
-
-      if (result.status >= 400) continue;
-
-      const blob = await result.blob();
-      const contentBuffer = Buffer.from(await blob.arrayBuffer());
-      console.log('download():contentBuffer=', contentBuffer);
-
-      const contentHash = crypto
-        .createHash('sha256')
-        .update(contentBuffer)
-        .digest('hex');
-      console.log('download():contentHash=', contentHash);
-
-      if (contentHash !== hash.toString('hex')) continue;
-
-      return {
-        data: contentBuffer,
-        mimeType: result.headers.get('Content-Type') || ''
-      };
-    } catch (e) {
-      console.error(e);
-      continue;
-    }
-  }
-
-  const e = new Error(`Unable to download content from ${options.UHRPUrl}`) as any;
-  e.code = 'ERR_INVALID_DOWNLOAD_URL';
-  throw e;
-};
-
-/*
-export function isValidURL(url: string): boolean {
-  // Implement your URL validation logic here
-  // For now, let's use a simple check
-  console.log('isValidURL():url=', url);
-
-  return url.startsWith('XU');
+  return decodedResults.length > 0 ? decodedResults : null
 }
-  */
+// Import types
+import { DownloadOptions, DownloadResult } from './types/types'
+
+export async function download({ UHRPUrl, confederacyHost, clientPrivateKey }: DownloadOptions): Promise<DownloadResult> {
+  try {
+    console.log('Download function called with:', { UHRPUrl, confederacyHost });
+    
+    const resolveResult = await resolve({ UHRPUrl, confederacyHost, clientPrivateKey });
+    console.log('Resolve result:', resolveResult);
+
+    if (!resolveResult || !Array.isArray(resolveResult) || resolveResult.length === 0) {
+      throw new Error('Unable to resolve URLs from UHRP URL!');
+    }
+
+    for (const url of resolveResult) {
+      console.log('Attempting to fetch URL:', url);
+      const response = await fetch(url, { method: 'GET' });
+      console.log('Fetch response status:', response.status);
+
+      if (response.status === 200) {
+        const blob = await response.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const mimeType = response.headers.get('content-type') || 'application/octet-stream';
+
+        console.log('Successfully downloaded content');
+        return { data: buffer, mimeType };
+      }
+    }
+
+    console.log('Failed to download content');
+    throw new Error('Failed to download content');
+  } catch (error) {
+    console.error('Error in download function:', error);
+    throw error;
+  }
+}

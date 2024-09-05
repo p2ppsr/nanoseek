@@ -1,75 +1,123 @@
+import * as indexModule from './src/index';
+import PacketPay from '@packetpay/js';
+import { isValidURL, getHashFromURL } from 'uhrp-url';
 import fetch from 'isomorphic-fetch';
-import { getHashFromURL } from 'uhrp-url';
-import { resolve, download, isValidURL } from './src/index';
-import crypto from 'crypto';
+import * as pushdrop from 'pushdrop';
 
-// Mock PacketPay
-jest.mock('@packetpay/js', () => ({
+jest.mock('@packetpay/js');
+jest.mock('uhrp-url');
+jest.mock('isomorphic-fetch');
+jest.mock('pushdrop');
+jest.mock('./getUrlFromQueryResult', () => ({
   __esModule: true,
-  default: jest.fn().mockResolvedValue({ body: Buffer.from(JSON.stringify([{ outputScript: 'mockScript' }])) })
+  default: jest.fn().mockReturnValue('https://example.com/cdn/file'),
 }));
 
-// Mock fetch
-global.fetch = jest.fn().mockResolvedValue({
-  status: 200,
-  blob: () => Promise.resolve(new Blob(['mockData'])),
-  headers: { get: () => 'text/plain' }
-});
-
 describe('NanoSeek', () => {
-  const mockUHRPUrl = 'uhrp://example.com';
-  const mockClientPrivateKey = 'mockPrivateKey';
-  const mockHash = 'mockHashValue';
+  let mockResolve: jest.SpyInstance;
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (getHashFromURL as jest.Mock).mockReturnValue(mockHash);
-    (fetch as jest.Mock).mockResolvedValue({
-      status: 200,
-      blob: () => ({
-        arrayBuffer: () => new Uint8Array([1, 2, 3])
-      }),
-      headers: {
-        get: () => 'application/json'
-      }
-    });
+    (fetch as jest.Mock).mockClear().mockReset();
     (isValidURL as jest.Mock).mockReturnValue(true);
+    (getHashFromURL as jest.Mock).mockReturnValue('mockHash');
+    (PacketPay as jest.Mock).mockResolvedValue({
+      body: Buffer.from(JSON.stringify([{ outputScript: 'mockScript' }]))
+    });
+    mockResolve = jest.spyOn(indexModule, 'resolve').mockImplementation();
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
   });
 
-  describe('resolve', () => {
-    it('Calls getHashFromURL with the UHRPUrl', async () => {
-      await resolve({ UHRPUrl: 'uhrp://example.com' });
-      expect(getHashFromURL).toHaveBeenLastCalledWith('uhrp://example.com');
-    });
+  describe('download function', () => {
+    test('should download content successfully', async () => {
+      mockResolve.mockResolvedValue(['https://example.com/cdn/file']);
+      
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockBlob = new Blob([mockArrayBuffer]);
+      (fetch as jest.Mock).mockResolvedValue({
+        status: 200,
+        blob: jest.fn().mockResolvedValue(mockBlob),
+        headers: {
+          get: jest.fn().mockReturnValue('application/json')
+        }
+      });
 
-    it('Handles optional parameters correctly', async () => {
-      await resolve({ UHRPUrl: 'uhrp://example.com', confederacyHost: 'MOCK_HOST', clientPrivateKey: 'MOCK_KEY' });
-      expect(getHashFromURL).toHaveBeenLastCalledWith('uhrp://example.com');
-      // Add more expectations here based on how resolve handles these optional parameters
-    });
+      const result = await indexModule.download({ UHRPUrl: 'uhrp://example.com' });
 
-    // Add more tests based on the current implementation of resolve()
-  });
-
-  describe('download', () => {
-    it('Calls getHashFromURL with the UHRPUrl', async () => {
-      await download({ UHRPUrl: 'uhrp://example.com' });
-      expect(getHashFromURL).toHaveBeenLastCalledWith('uhrp://example.com');
-    });
-
-    it('Calls fetch with the HTTP URL', async () => {
-      await download({ UHRPUrl: 'uhrp://example.com' });
-      expect(fetch).toHaveBeenCalledWith(expect.any(String), { method: 'GET' });
-    });
-
-    it('Returns the data and MIME type', async () => {
-      const result = await download({ UHRPUrl: 'uhrp://example.com' });
+      expect(mockResolve).toHaveBeenCalledWith({ 
+        UHRPUrl: 'uhrp://example.com', 
+        confederacyHost: undefined,
+        clientPrivateKey: undefined
+      });
+      expect(fetch).toHaveBeenCalledWith('https://example.com/cdn/file', { method: 'GET' });
       expect(result).toEqual({
         data: expect.any(Buffer),
         mimeType: 'application/json'
       });
+      expect(consoleLogSpy).toHaveBeenCalledWith('Successfully downloaded content');
     });
 
-    // Add more tests based on the current implementation of download()
+    test('should try the second URL if the first request fails', async () => {
+      mockResolve.mockResolvedValue(['https://example.com/cdn/file1', 'https://example.com/cdn/file2']);
+      
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockBlob = new Blob([mockArrayBuffer]);
+      (fetch as jest.Mock)
+        .mockResolvedValueOnce({ status: 404 })
+        .mockResolvedValueOnce({
+          status: 200,
+          blob: jest.fn().mockResolvedValue(mockBlob),
+          headers: {
+            get: jest.fn().mockReturnValue('application/json')
+          }
+        });
+
+      const result = await indexModule.download({ UHRPUrl: 'uhrp://example.com' });
+
+      expect(mockResolve).toHaveBeenCalledWith({ 
+        UHRPUrl: 'uhrp://example.com', 
+        confederacyHost: undefined,
+        clientPrivateKey: undefined
+      });
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(fetch).toHaveBeenNthCalledWith(1, 'https://example.com/cdn/file1', { method: 'GET' });
+      expect(fetch).toHaveBeenNthCalledWith(2, 'https://example.com/cdn/file2', { method: 'GET' });
+      expect(result).toEqual({
+        data: expect.any(Buffer),
+        mimeType: 'application/json'
+      });
+      expect(consoleLogSpy).toHaveBeenCalledWith('Successfully downloaded content');
+    });
+
+    test('should throw an error if all download attempts fail', async () => {
+      mockResolve.mockResolvedValue(['https://example.com/cdn/file']);
+      (fetch as jest.Mock).mockResolvedValue({ status: 404 });
+
+      await expect(indexModule.download({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow('Failed to download content');
+
+      expect(mockResolve).toHaveBeenCalledWith({ 
+        UHRPUrl: 'uhrp://example.com', 
+        confederacyHost: undefined,
+        clientPrivateKey: undefined
+      });
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(consoleLogSpy).toHaveBeenCalledWith('Failed to download content');
+    });
+
+    test('should throw an error if resolve returns null', async () => {
+      mockResolve.mockResolvedValue(null);
+
+      await expect(indexModule.download({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow('Unable to resolve URLs from UHRP URL!');
+
+      expect(mockResolve).toHaveBeenCalledWith({ 
+        UHRPUrl: 'uhrp://example.com', 
+        confederacyHost: undefined,
+        clientPrivateKey: undefined
+      });
+      expect(fetch).not.toHaveBeenCalled();
+    });
   });
 });
