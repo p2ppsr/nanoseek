@@ -1,9 +1,9 @@
-import { QueryResult } from './getUrlFromQueryResult'
+import { QueryResult } from './utils/getUrlFromQueryResult'
 
 // Required to export all types
 export * from './types/types'
 import fetch from 'cross-fetch'
-import { getUrlFromQueryResult } from './getUrlFromQueryResult'
+import { getUrlFromQueryResult } from './utils/getUrlFromQueryResult'
 import * as pushdrop from 'pushdrop'
 import PacketPay from '@packetpay/js'
 import { isValidURL } from 'uhrp-url'
