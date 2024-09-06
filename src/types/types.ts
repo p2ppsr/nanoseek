@@ -1,7 +1,3 @@
-// types.ts
-import type { UHRPUrl as ImportedUHRPUrl } from 'uhrp-url'
-import type { PacketPayClient as ImportedPacketPayClient } from '@packetpay/js'
-
 export interface DownloadOptions {
   UHRPUrl: string
   confederacyHost?: string
@@ -15,16 +11,15 @@ export interface DownloadResult {
 
 export type DownloadFunction = (options: DownloadOptions) => Promise<DownloadResult>
 
-// These types are used for type checking and are imported from their respective packages
-export type { UHRPUrl } from 'uhrp-url'
-export type { PacketPayClient } from '@packetpay/js'
 export type QueryResult = Record<string, unknown>
 
-// Need to replace empty interfaces with more specific types
 export type NanoSeekOptions = Record<string, unknown>
-export type NanoSeekResult = unknown // Or a more specific type if possible
-export type NanoSeekError = Error // Or a custom error type if needed
+export type NanoSeekResult = unknown
+export type NanoSeekError = Error
 
-// For UHRPUrl and PacketPayClient:
-export type UHRPUrl = ImportedUHRPUrl
-export type PacketPayClient = ImportedPacketPayClient
+// Update ResolveParams to use basic types
+export interface ResolveParams {
+  UHRPUrl: string; // Changed from UHRPUrl to string
+  confederacyHost?: string;
+  packetPayClient?: any; // Changed from PacketPayClient to any
+}
