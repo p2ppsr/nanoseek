@@ -52,7 +52,7 @@ describe('resolve function', () => {
   it('should throw an error for invalid UHRP URL', async () => {
     (isValidURL as jest.Mock).mockReturnValue(false)
 
-    await expect(resolve({ UHRPUrl: 'invalid-url' })).rejects.toThrow('Invalid parameter UHRP URL')
+    await expect(resolve({ UHRPUrl: 'invalid-url' })).rejects.toThrow('Invalid parameter UHRP url')
   })
 
   it('should return null for empty lookup result', async () => {
