@@ -1,92 +1,93 @@
-import * as indexModule from '../index'
-import PacketPay from '@packetpay/js'
+import { resolve, download } from '../index'
 import { isValidURL, getHashFromURL, getURLForHash } from 'uhrp-url'
 import fetch from 'cross-fetch'
+import PacketPay from '@packetpay/js'
 import * as pushdrop from 'pushdrop'
 import { getUrlFromQueryResult } from '../utils/getUrlFromQueryResult'
+import crypto from 'crypto'
+import * as babbageSDK from '@babbage/sdk-ts'
 
-jest.mock('@packetpay/js')
-jest.mock('uhrp-url', () => ({
-  isValidURL: jest.fn(),
-  getHashFromURL: jest.fn(),
-  getURLForHash: jest.fn()
+jest.mock('@babbage/sdk-ts', () => ({
+  ...jest.requireActual('@babbage/sdk-ts'),
+  getPublicKey: jest.fn().mockResolvedValue('mockedPublicKey')
 }))
-jest.mock('cross-fetch')
-jest.mock('pushdrop')
-jest.mock('../utils/getUrlFromQueryResult')
-jest.mock('../index', () => ({
-  ...jest.requireActual('../index'),
-  resolve: jest.fn(),
-  download: jest.fn()
+
+// We're not mocking these anymore
+// jest.mock('uhrp-url')
+// jest.mock('cross-fetch')
+// jest.mock('@packetpay/js')
+// jest.mock('pushdrop')
+// jest.mock('../utils/getUrlFromQueryResult')
+// jest.mock('crypto')
+
+import { jest } from '@jest/globals'
+
+// Mock the entire @packetpay/js module
+jest.mock('@packetpay/js', () => ({
+  PacketPayClient: jest.fn().mockImplementation(() => ({
+    request: jest.fn().mockResolvedValue({ /* mock response data */ }),
+  })),
 }))
 
 describe('NanoSeek', () => {
+  const testUHRPUrl = 'XUTpehJ6pWvx5XBPTV4Pts8bhqz1vvFk3bGo6FUSsNyUqWVGrnfJ'
+  const confederacyHost = 'https://staging-confederacy.babbage.systems'
+
   beforeEach(() => {
+    // Reset all mocks before each test
     jest.clearAllMocks()
-    ;(fetch as jest.MockedFunction<typeof fetch>).mockClear()
-    ;(isValidURL as jest.Mock).mockReturnValue(true)
-    ;(getHashFromURL as jest.Mock).mockReturnValue('mockhash')
-    ;(getURLForHash as jest.Mock).mockReturnValue('uhrp://example.com')
-    ;(indexModule.download as jest.Mock).mockImplementation(async ({ UHRPUrl }) => {
-      await indexModule.resolve({ UHRPUrl })
-      return {
-        data: Buffer.from('mock data'),
-        mimeType: 'application/json'
-      }
-    })
-    ;(indexModule.resolve as jest.Mock).mockResolvedValue(['https://example.com/cdn/file'])
   })
 
   describe('download function', () => {
     test('should download content successfully', async () => {
-      const result = await indexModule.download({ UHRPUrl: 'uhrp://example.com' })
+      console.log('Starting download test')
+      try {
+        console.log('Calling download function')
+        const result = await download({
+          UHRPUrl: testUHRPUrl,
+          confederacyHost
+        })
+        console.log('Download function returned successfully')
+        expect(result).toEqual({
+          data: expect.any(Buffer),
+          mimeType: expect.any(String)
+        })
+      } catch (error) {
+        console.error('Download failed with error:', error)
+        console.error('Error stack:', (error as Error).stack)
+        throw error // Re-throw the error to fail the test
+      }
+    }, 30000) // Increased timeout to 30 seconds
 
-      expect(indexModule.resolve).toHaveBeenCalledWith({ UHRPUrl: 'uhrp://example.com' })
-      expect(result).toEqual({
-        data: expect.any(Buffer),
-        mimeType: 'application/json'
-      })
-    })
-
-    test('should throw an error if all download attempts fail', async () => {
-      ;(indexModule.download as jest.Mock).mockRejectedValueOnce(new Error('Unable to download content from uhrp://example.com'))
-
-      await expect(indexModule.download({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow('Unable to download content from uhrp://example.com')
+    test('should throw an error for invalid UHRP URL', async () => {
+      await expect(download({
+        UHRPUrl: 'invalid-url',
+        confederacyHost
+      })).rejects.toThrow('Invalid parameter UHRP url')
     })
   })
 
   describe('resolve function', () => {
-    test('should return an array of URLs', async () => {
-      const result = await indexModule.resolve({ UHRPUrl: 'uhrp://example.com' })
-      expect(result).toEqual(['https://example.com/cdn/file'])
-    })
-
-    test('should throw an error for invalid UHRP URL', async () => {
-      ;(isValidURL as jest.Mock).mockReturnValueOnce(false)
-      ;(indexModule.resolve as jest.Mock).mockRejectedValueOnce(new Error('Invalid parameter UHRP url'))
-
-      await expect(indexModule.resolve({ UHRPUrl: 'invalid-url' })).rejects.toThrow('Invalid parameter UHRP url')
-    })
-
-    test('should return null for empty lookup result', async () => {
-      ;(indexModule.resolve as jest.Mock).mockResolvedValueOnce(null)
-      const result = await indexModule.resolve({ UHRPUrl: 'uhrp://example.com' })
-      expect(result).toBeNull()
-    })
-
-    test('should handle PacketPay error', async () => {
-      ;(indexModule.resolve as jest.Mock).mockRejectedValueOnce(new Error('PacketPay error'))
-      await expect(indexModule.resolve({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow('PacketPay error')
-    })
-
-    test('should handle lookup result error', async () => {
-      ;(indexModule.resolve as jest.Mock).mockRejectedValueOnce(new Error('Lookup error'))
-      await expect(indexModule.resolve({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow('Lookup error')
-    })
-
-    test('should handle script decoding error', async () => {
-      ;(indexModule.resolve as jest.Mock).mockRejectedValueOnce(new Error('Decoding error'))
-      await expect(indexModule.resolve({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow('Decoding error')
-    })
+    test('should resolve URLs successfully', async () => {
+      console.log('Starting resolve test')
+      try {
+        console.log('Calling resolve function')
+        const result = await resolve({
+          UHRPUrl: testUHRPUrl,
+          confederacyHost
+        })
+        console.log('Resolve function returned successfully')
+        expect(result).not.toBeNull()
+        if (result) {
+          expect(result).toBeInstanceOf(Array)
+          expect(result.length).toBeGreaterThan(0)
+          expect(result[0]).toMatch(/^https?:\/\//) // URL should start with http:// or https://
+        }
+      } catch (error) {
+        console.error('Resolve failed with error:', error)
+        console.error('Error stack:', (error as Error).stack)
+        throw error // Re-throw the error to fail the test
+      }
+    }, 30000) // Increased timeout to 30 seconds
   })
 })
