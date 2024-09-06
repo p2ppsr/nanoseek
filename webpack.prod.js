@@ -21,7 +21,9 @@ module.exports = {
       https: require.resolve('https-browserify'),
       os: require.resolve('os-browserify/browser'),
       buffer: require.resolve('buffer'),
-      vm: require.resolve('vm-browserify')
+      vm: require.resolve('vm-browserify'),
+      fs: false,
+      path: require.resolve('path-browserify')
     }
   },
   module: {
@@ -42,6 +44,9 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer']
+    }),
+    new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
+      resource.request = resource.request.replace(/^node:/, '');
     })
   ],
   optimization: {
