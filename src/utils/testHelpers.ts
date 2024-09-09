@@ -17,7 +17,7 @@ export const mockUHRPUrl = 'uhrp://example.com/path'
 export const mockResolvedUrl = 'https://staging-nanostore.babbage.systems/cdn/MGYzaYCwSUKvYpBDXuTgLM'
 
 export function setupMocks() {
-  jest.clearAllMocks();
+  jest.clearAllMocks()
   ;(isValidURL as jest.Mock).mockReturnValue(true)
   ;(getHashFromURL as jest.Mock).mockReturnValue(mockHash)
   ;(getURLForHash as jest.Mock).mockReturnValue(mockUHRPUrl)

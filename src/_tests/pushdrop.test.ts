@@ -1,6 +1,4 @@
 import { download } from '../index'
-import PacketPay from '@packetpay/js'
-import * as pushdrop from 'pushdrop'
 import * as uhrpUrl from 'uhrp-url'
 import fetch from 'isomorphic-fetch'
 import crypto from 'crypto'
