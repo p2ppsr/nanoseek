@@ -1,9 +1,9 @@
-import { NanoSeekError, QueryResult, getUrlFromQueryResult } from './utils/getUrlFromQueryResult'
 import { isValidURL, getHashFromURL, getURLForHash } from 'uhrp-url'
 import * as pushdrop from 'pushdrop'
 import fetch from 'isomorphic-fetch'
 import PacketPay from '@packetpay/js'
 import crypto from 'crypto';
+import { NanoSeekError } from './utils/errors';
 
 interface ErrorWithCode extends Error {
   code?: string
