@@ -1,24 +1,24 @@
-export type QueryResult = {
-  fields: (string | Buffer)[]
+import { NanoSeekError } from '../types/types'
+
+export interface QueryResult {
+  fields: (string | Buffer)[];
 }
 
-/**
- * This function takes a query result and returns the associated url(s).
- * @param queryResult - The query result to parse.
- *
- * @returns The retrieved url(s).
- * @throws {Error} If passed parameter query result is missing or an invalid type.
- */
-export function getUrlFromQueryResult(queryResult: QueryResult): string {
-  if (typeof queryResult === 'undefined') {
-    const e = new Error('queryResult is a required parameter!')
-    e.name = 'ERR_INVALID_QUERY_PARAM'
-    throw e
+export function getUrlFromQueryResult(result: any): string | null {
+  if (typeof result === 'undefined') {
+    throw new NanoSeekError('result is a required parameter!', 'ERR_INVALID_QUERY_PARAM')
   }
-  if (typeof queryResult !== 'object' || queryResult === null) {
-    const e = new Error(`queryResult must be an object, but ${typeof queryResult} was given!`)
-    e.name = 'ERR_INVALID_QUERY_TYPE'
-    throw e
+  if (typeof result !== 'object' || result === null) {
+    throw new NanoSeekError(
+      `result must be an object, but ${typeof result} was given!`,
+      'ERR_INVALID_QUERY_TYPE'
+    )
   }
-  return queryResult.fields[4].toString('utf8')
+  if (!Array.isArray(result.fields) || result.fields.length < 5) {
+    throw new NanoSeekError('Invalid result structure', 'ERR_INVALID_QUERY_STRUCTURE')
+  }
+  const url = result.fields[4]?.toString('utf8') ?? null;
+  return url && url.trim() !== '' ? url : null;
 }
+
+export { NanoSeekError };
