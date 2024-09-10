@@ -132,7 +132,23 @@
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
 <a name='L69'></a><a href='#L69'>69</a>
-<a name='L70'></a><a href='#L70'>70</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -143,14 +159,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -196,25 +214,36 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { resolve as originalResolve, download as originalDownload, ResolveParams, DownloadResult } from './index'
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {
+  resolve as originalResolve,
+  download as originalDownload,
+  ResolveParams,
+  DownloadResult
+} from './index'
 import PacketPay from '@packetpay/js'
 &nbsp;
 // Define DownloadParams if it's not exported from './index'
 interface DownloadParams {
-  url: string;
+  url: string
   // Add other properties as needed
 }
 &nbsp;
 function createLogger(funcName: string) {
   return {
-    logStart: (...args: unknown[]) =&gt; console.log(`[DEBUG] ${funcName} called with:`, JSON.stringify(args)),
+    logStart: (...args: unknown[]) =&gt;
+      console.log(`[DEBUG] ${funcName} called with:`, JSON.stringify(args)),
     logEnd: () =&gt; console.log(`[DEBUG] ${funcName} completed successfully`),
-    logError: (error: Error) =&gt; console.error(`[ERROR] Error in ${funcName}:`, error),
+    logError: (error: Error) =&gt;
+      console.error(`[ERROR] Error in ${funcName}:`, error)
   }
 }
 &nbsp;
@@ -225,12 +254,12 @@ function wrapPacketPay(originalPacketPay: typeof PacketPay) {
   })
 }
 &nbsp;
-export const resolve: typeof originalResolve = async (query) =&gt; {
+export const resolve: typeof originalResolve = async query =&gt; {
   const logger = createLogger('resolve')
   const originalPacketPay = PacketPay
   logger.logStart(query)
   try {
-    (PacketPay as unknown) = wrapPacketPay(originalPacketPay)
+    ;(PacketPay as unknown) = wrapPacketPay(originalPacketPay)
     const result = await originalResolve(query)
     logger.logEnd()
     return result
@@ -238,16 +267,16 @@ export const resolve: typeof originalResolve = async (query) =&gt; {
     logger.logError(error as Error)
     throw error
   } finally {
-    (PacketPay as unknown) = originalPacketPay
+    ;(PacketPay as unknown) = originalPacketPay
   }
 }
 &nbsp;
-export const download: typeof originalDownload = (params) =&gt; {
+export const download: typeof originalDownload = params =&gt; {
   const logger = createLogger('download')
   const originalPacketPay = PacketPay
   logger.logStart(params)
   try {
-    (PacketPay as unknown) = wrapPacketPay(originalPacketPay)
+    ;(PacketPay as unknown) = wrapPacketPay(originalPacketPay)
     return originalDownload(params).then(result =&gt; {
       logger.logEnd()
       return result
@@ -256,7 +285,7 @@ export const download: typeof originalDownload = (params) =&gt; {
 <span class="cstat-no" title="statement not covered" >    logger.logError(error as Error)</span>
 <span class="cstat-no" title="statement not covered" >    throw error</span>
   } finally {
-    (PacketPay as unknown) = originalPacketPay
+    ;(PacketPay as unknown) = originalPacketPay
   }
 }
 &nbsp;
@@ -264,20 +293,24 @@ export function <span class="fstat-no" title="function not covered" >logResolve(
 <span class="cstat-no" title="statement not covered" >  console.log('Resolve params:', params, 'Result:', result)</span>
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >logDownload(</span>params: DownloadParams, result: DownloadResult): void {
+export function <span class="fstat-no" title="function not covered" >logDownload(</span>
+  params: DownloadParams,
+  result: DownloadResult
+): void {
 <span class="cstat-no" title="statement not covered" >  console.log('Download params:', params, 'Result:', result)</span>
 }
 &nbsp;
 export function <span class="fstat-no" title="function not covered" >logError(</span>error: Error): void {
 <span class="cstat-no" title="statement not covered" >  console.error('Error:', error)</span>
-}</pre></td></tr></table></pre>
+}
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-09-09T22:05:07.103Z
+                at 2024-09-10T14:07:52.332Z
             </div>
         <script src="../prettify.js"></script>
         <script>

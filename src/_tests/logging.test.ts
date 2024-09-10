@@ -24,18 +24,32 @@ describe('logging', () => {
   })
 
   it('should log resolve function calls', async () => {
-    const mockResolve = jest.spyOn(index, 'resolve').mockResolvedValue(['http://example.com'])
+    const mockResolve = jest
+      .spyOn(index, 'resolve')
+      .mockResolvedValue(['http://example.com'])
     await resolve({ UHRPUrl: 'test' })
-    expect(mockConsoleLog).toHaveBeenCalledWith('[DEBUG] resolve called with:', '[{"UHRPUrl":"test"}]')
-    expect(mockConsoleLog).toHaveBeenCalledWith('[DEBUG] resolve completed successfully')
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      '[DEBUG] resolve called with:',
+      '[{"UHRPUrl":"test"}]'
+    )
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      '[DEBUG] resolve completed successfully'
+    )
     expect(mockResolve).toHaveBeenCalledWith({ UHRPUrl: 'test' })
   })
 
   it('should log download function calls', async () => {
-    const mockDownload = jest.spyOn(index, 'download').mockResolvedValue({ data: Buffer.from('test'), mimeType: 'text/plain' })
+    const mockDownload = jest
+      .spyOn(index, 'download')
+      .mockResolvedValue({ data: Buffer.from('test'), mimeType: 'text/plain' })
     await download({ UHRPUrl: 'http://example.com' })
-    expect(mockConsoleLog).toHaveBeenCalledWith('[DEBUG] download called with:', '[{"UHRPUrl":"http://example.com"}]')
-    expect(mockConsoleLog).toHaveBeenCalledWith('[DEBUG] download completed successfully')
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      '[DEBUG] download called with:',
+      '[{"UHRPUrl":"http://example.com"}]'
+    )
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      '[DEBUG] download completed successfully'
+    )
     expect(mockDownload).toHaveBeenCalledWith({ UHRPUrl: 'http://example.com' })
   })
 
@@ -43,6 +57,9 @@ describe('logging', () => {
     const error = new Error('Test error')
     jest.spyOn(index, 'resolve').mockRejectedValue(error)
     await expect(resolve({ UHRPUrl: 'test' })).rejects.toThrow('Test error')
-    expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('[ERROR] Error in resolve:'), error)
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      expect.stringContaining('[ERROR] Error in resolve:'),
+      error
+    )
   })
 })

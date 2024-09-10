@@ -1,7 +1,10 @@
 import 'isomorphic-fetch'
 
 export class NanoSeekError extends Error {
-  constructor(message: string, public code: string) {
+  constructor(
+    message: string,
+    public code: string
+  ) {
     super(message)
     this.name = 'NanoSeekError'
   }
@@ -18,7 +21,9 @@ export interface DownloadResult {
   mimeType: string
 }
 
-export type DownloadFunction = (options: DownloadOptions) => Promise<DownloadResult>
+export type DownloadFunction = (
+  options: DownloadOptions
+) => Promise<DownloadResult>
 
 export interface QueryResult {
   fields: (string | Buffer)[]

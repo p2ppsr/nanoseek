@@ -13,7 +13,9 @@ jest.mock('../index', () => {
   const originalModule = jest.requireActual('../index')
   return {
     ...originalModule,
-    resolve: jest.fn().mockResolvedValue(['http://example1.com', 'http://example2.com'])
+    resolve: jest
+      .fn()
+      .mockResolvedValue(['http://example1.com', 'http://example2.com'])
   }
 })
 
@@ -25,9 +27,10 @@ describe('download function', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(uhrpUrl.isValidURL as jest.Mock).mockReturnValue(true)
-    ;(uhrpUrl.getHashFromURL as jest.Mock).mockReturnValue(Buffer.from('mockhash'))
+    ;(uhrpUrl.getHashFromURL as jest.Mock).mockReturnValue(
+      Buffer.from('mockhash')
+    )
     ;(uhrpUrl.getURLForHash as jest.Mock).mockReturnValue('uhrp://mockhash')
-    
     ;(fetch as jest.Mock).mockResolvedValue({
       status: 200,
       blob: jest.fn().mockResolvedValue({

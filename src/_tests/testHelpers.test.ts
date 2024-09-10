@@ -1,4 +1,11 @@
-import { setupMocks, mockFetch, mockHash, mockOutputScript, mockUHRPUrl, mockResolvedUrl } from '../utils/testHelpers'
+import {
+  setupMocks,
+  mockFetch,
+  mockHash,
+  mockOutputScript,
+  mockUHRPUrl,
+  mockResolvedUrl
+} from '../utils/testHelpers'
 import PacketPay from '@packetpay/js'
 import * as pushdrop from 'pushdrop'
 import { isValidURL, getHashFromURL, getURLForHash } from 'uhrp-url'
@@ -16,10 +23,10 @@ describe('testHelpers', () => {
       const mockFn = jest.fn()
       mockFn()
       expect(mockFn).toHaveBeenCalled()
-      
+
       // Call setupMocks
       setupMocks()
-      
+
       // Check if the mock function's calls have been cleared
       expect(mockFn).not.toHaveBeenCalled()
     })
@@ -95,12 +102,16 @@ describe('testHelpers', () => {
   describe('exported constants', () => {
     it('should export mockHash as a Buffer', () => {
       expect(mockHash).toBeInstanceOf(Buffer)
-      expect(mockHash.toString('hex')).toBe('039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81')
+      expect(mockHash.toString('hex')).toBe(
+        '039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81'
+      )
     })
 
     it('should export mockOutputScript as a string', () => {
       expect(typeof mockOutputScript).toBe('string')
-      expect(mockOutputScript).toBe('4104ca0a8ce950bf2bc85115bd68818455ae2f187efc96c7527dfad98b69531ae65d13cff3e6f07263dcc64c8ccfd03884983a896b0c5887f2ec5bfd7ad739b76119ac')
+      expect(mockOutputScript).toBe(
+        '4104ca0a8ce950bf2bc85115bd68818455ae2f187efc96c7527dfad98b69531ae65d13cff3e6f07263dcc64c8ccfd03884983a896b0c5887f2ec5bfd7ad739b76119ac'
+      )
     })
 
     it('should export mockUHRPUrl as a string', () => {
@@ -110,7 +121,9 @@ describe('testHelpers', () => {
 
     it('should export mockResolvedUrl as a string', () => {
       expect(typeof mockResolvedUrl).toBe('string')
-      expect(mockResolvedUrl).toBe('https://staging-nanostore.babbage.systems/cdn/MGYzaYCwSUKvYpBDXuTgLM')
+      expect(mockResolvedUrl).toBe(
+        'https://staging-nanostore.babbage.systems/cdn/MGYzaYCwSUKvYpBDXuTgLM'
+      )
     })
   })
 })

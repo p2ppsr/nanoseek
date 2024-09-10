@@ -10,11 +10,13 @@ export const mockHash = Buffer.from(
   'hex'
 )
 
-export const mockOutputScript = '4104ca0a8ce950bf2bc85115bd68818455ae2f187efc96c7527dfad98b69531ae65d13cff3e6f07263dcc64c8ccfd03884983a896b0c5887f2ec5bfd7ad739b76119ac'
+export const mockOutputScript =
+  '4104ca0a8ce950bf2bc85115bd68818455ae2f187efc96c7527dfad98b69531ae65d13cff3e6f07263dcc64c8ccfd03884983a896b0c5887f2ec5bfd7ad739b76119ac'
 
 export const mockUHRPUrl = 'uhrp://example.com/path'
 
-export const mockResolvedUrl = 'https://staging-nanostore.babbage.systems/cdn/MGYzaYCwSUKvYpBDXuTgLM'
+export const mockResolvedUrl =
+  'https://staging-nanostore.babbage.systems/cdn/MGYzaYCwSUKvYpBDXuTgLM'
 
 export function setupMocks() {
   jest.clearAllMocks()
@@ -33,7 +35,7 @@ export function setupMocks() {
       Buffer.from(mockResolvedUrl)
     ]
   })
-  
+
   const mockCreateHash = jest.fn().mockReturnValue({
     update: jest.fn().mockReturnThis(),
     digest: jest.fn().mockReturnValue(mockHash.toString('hex'))
