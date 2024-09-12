@@ -1,11 +1,10 @@
-import { isValidURL, getHashFromURL, getURLForHash } from 'uhrp-url'
-import * as pushdrop from 'pushdrop'
-import fetch from 'isomorphic-fetch'
-import PacketPay from '@packetpay/js'
-import crypto from 'crypto'
-import { resolve } from './resolve'
-import { ResolveParams, DownloadResult } from '../types/download'
-import { ErrorWithCode } from '../types/types'
+import { isValidURL, getHashFromURL, getURLForHash } from 'uhrp-url';
+import * as pushdrop from 'pushdrop';
+import fetch from 'isomorphic-fetch';
+import crypto from 'crypto';
+import { resolve } from './resolve';
+import { ResolveParams, DownloadResult } from '../types/download';
+import { ErrorWithCode } from '../types/types';
 
 /**
  * Downloads content from a UHRP url and returns it as a buffer with its mime type, after validating that the hash is correct. It uses the passed Confederacy hosts or the default one.
@@ -23,85 +22,76 @@ export const download = async ({
     confederacyHost = 'https://confederacy.babbage.systems',
     clientPrivateKey
   }: ResolveParams = {}): Promise<DownloadResult> => {
+    
     if (!UHRPUrl || !isValidURL(UHRPUrl)) {
-      const e: ErrorWithCode = new Error('Invalid parameter UHRP url')
-      e.code = 'ERR_INVALID_UHRP_URL'
-      throw e
+      console.error(`Invalid UHRPUrl provided: ${UHRPUrl}`);
+      const e: ErrorWithCode = new Error('Invalid parameter UHRP url');
+      e.code = 'ERR_INVALID_UHRP_URL';
+      throw e;
     }
   
-    // Ensure the UHRPUrl is standardized without any prefixes
-    const hash = getHashFromURL(UHRPUrl)
-    const standardizedUHRPUrl = getURLForHash(hash)
+    console.log(`Resolving UHRP URL: ${UHRPUrl}`);
+    const hash = getHashFromURL(UHRPUrl);
+    const standardizedUHRPUrl = getURLForHash(hash);
+    
+    console.log(`Resolved URL: ${standardizedUHRPUrl}`);
   
-    // A list of potential download URLs are resolved
-    const resolveParams: {
-      UHRPUrl: string
-      confederacyHost?: string
-      clientPrivateKey?: string
-    } = {
+    const resolveParams = {
       UHRPUrl: standardizedUHRPUrl,
-      confederacyHost
-    }
-    if (clientPrivateKey) {
-      resolveParams.clientPrivateKey = clientPrivateKey
-    }
-    const URLs = await resolve(resolveParams)
+      confederacyHost,
+      ...(clientPrivateKey && { clientPrivateKey })
+    };
+    
+    const URLs = await resolve(resolveParams);
   
-    // Make sure we get a list of potential URLs before trying to fetch
+    console.log(`Resolved URLs: ${URLs}`);
+  
     if (URLs.length === 0) {
-      const e: ErrorWithCode = new Error('Unable to resolve URLs from UHRP URL!')
-      e.code = 'ERR_NO_RESOLVED_URLS_FOUND'
-      throw e
+      console.error('No URLs resolved');
+      const e: ErrorWithCode = new Error('Unable to resolve URLs from UHRP URL!');
+      e.code = 'ERR_NO_RESOLVED_URLS_FOUND';
+      throw e;
     }
   
-    // Download is attempted from each url until successful
     for (let i = 0; i < URLs.length; i++) {
       try {
-        // The url is fetched
-        const result = await fetch(URLs[i], { method: 'GET' })
+        console.log(`Fetching content from: ${URLs[i]}`);
+        const result = await fetch(URLs[i], { method: 'GET' });
   
-        // If the request fails, continue to the next url
         if (result.status >= 400) {
-          continue
+          console.error(`Failed to fetch content from ${URLs[i]}: HTTP status ${result.status}`);
+          continue;
         }
   
-        // The body is loaded into a buffer
-        const blob = await result.blob()
-        const contentBuffer = Buffer.from(await blob.arrayBuffer())
+        const blob = await result.blob();
+        const contentBuffer = Buffer.from(await blob.arrayBuffer());
   
-        // If the content is empty, continue to the next url
         if (contentBuffer.length === 0) {
-          continue
+          console.error(`Empty content from ${URLs[i]}`);
+          continue;
         }
   
-        // The hash of the buffer is calculated
-        const contentHash = crypto
-          .createHash('sha256')
-          .update(contentBuffer)
-          .digest('hex')
+        const contentHash = crypto.createHash('sha256').update(contentBuffer).digest('hex');
   
-        // If the hash does not match, continue to the next url
+        // Ensure both are compared as strings in hex format
         if (contentHash !== hash.toString('hex')) {
-          continue
-        }
-  
-        // Return the data and the MIME type
+          console.error(`Hash mismatch for content from ${URLs[i]}: Expected ${hash.toString('hex')}, got ${contentHash}`);
+          continue;
+        }  
+        
+        console.log(`Successfully downloaded content from: ${URLs[i]}`);
         return {
           data: contentBuffer,
-          mimeType:
-            result.headers.get('Content-Type') || 'application/octet-stream'
-        }
-      } catch (e) {
-        // In case of any errors with this url, continue to the next one
-        continue
+          mimeType: result.headers.get('Content-Type') || 'application/octet-stream',
+        };
+      } catch (error: any) {
+        console.error(`Error downloading from ${URLs[i]}: ${error.message}`);
+        continue;
       }
     }
   
-    // If the loop finishes without success, the content cannot be downloaded
-    const e: ErrorWithCode = new Error(
-      `Unable to download content from ${UHRPUrl}`
-    )
-    e.code = 'ERR_INVALID_DOWNLOAD_URL'
-    throw e
-  }
-  
+    console.error(`Unable to download content from ${UHRPUrl}`);
+    const e: ErrorWithCode = new Error(`Unable to download content from ${UHRPUrl}`);
+    e.code = 'ERR_INVALID_DOWNLOAD_URL';
+    throw e;
+  };

@@ -1,4 +1,4 @@
-import { resolve } from '../index'
+import { resolve } from '../components/resolve'
 import * as uhrpUrl from 'uhrp-url'
 import * as pushdrop from 'pushdrop'
 import PacketPay from '@packetpay/js'
