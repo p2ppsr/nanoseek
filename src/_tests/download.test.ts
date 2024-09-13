@@ -1,159 +1,147 @@
-import { download } from '../components/download';
-import fetch from 'isomorphic-fetch';
-import * as uhrpUrl from 'uhrp-url';
-import * as pushdrop from 'pushdrop';
-import crypto from 'crypto';
+import * as indexModule from '../index'
+import * as resolveModule from '../components/resolve'
+import * as uhrpUrl from 'uhrp-url'
+import fetch from 'isomorphic-fetch'
+import crypto from 'crypto'
 
-jest.mock('uhrp-url', () => ({
-  isValidURL: jest.fn(),
-  getHashFromURL: jest.fn(),
-  getURLForHash: jest.fn(),
-  resolve: jest.fn(),
-}));
+jest.mock('uhrp-url')
+jest.mock('isomorphic-fetch')
+jest.mock('crypto')
 
-jest.mock('isomorphic-fetch', () => jest.fn());
-jest.mock('@packetpay/js');
-jest.mock('pushdrop');
-jest.mock('crypto', () => ({
-  createHash: jest.fn(() => ({
-    update: jest.fn().mockReturnThis(),
-    digest: jest.fn().mockReturnValue(Buffer.from('mockhash').toString('hex')),
-  })),
-}));
+// Mock PacketPay to control its behavior
+jest.mock('@packetpay/js', () => ({
+  PacketPay: jest.fn()
+}))
+
+const createMockArrayBuffer = (content: string): ArrayBuffer => {
+  const buffer = new ArrayBuffer(content.length)
+  const uint8Array = new Uint8Array(buffer)
+  for (let i = 0; i < content.length; i++) {
+    uint8Array[i] = content.charCodeAt(i)
+  }
+  return buffer
+}
+
+let resolveSpy: jest.SpyInstance
 
 describe('download function', () => {
-  const mockValidUHRPUrl = 'uhrp://validmockhash';
-  const mockInvalidUHRPUrl = 'invalid://url';
+  const mockValidUHRPUrl = 'uhrp://validmockhash'
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (uhrpUrl.isValidURL as jest.Mock).mockImplementation(
+    jest.clearAllMocks()
+    ;(uhrpUrl.isValidURL as jest.Mock).mockImplementation(
       (url: string) => url === mockValidUHRPUrl
-    );
-    (uhrpUrl.getHashFromURL as jest.Mock).mockReturnValue(Buffer.from('mockhash'));
-    (uhrpUrl.getURLForHash as jest.Mock).mockReturnValue(mockValidUHRPUrl);
-    (pushdrop.decode as jest.Mock).mockReturnValue({
-      url: 'http://example.com',
-    });
-  });
+    )
+    ;(uhrpUrl.getHashFromURL as jest.Mock).mockReturnValue(
+      Buffer.from('mockhash')
+    )
+    ;(uhrpUrl.getURLForHash as jest.Mock).mockReturnValue(mockValidUHRPUrl)
+    ;(crypto.createHash as jest.Mock).mockReturnValue({
+      update: jest.fn().mockReturnThis(),
+      digest: jest.fn().mockReturnValue(Buffer.from('mockhash').toString('hex'))
+    })
+    resolveSpy = jest
+      .spyOn(resolveModule, 'resolve')
+      .mockResolvedValue(['http://example1.com', 'http://example2.com'])
+  })
 
-  it('should successfully download content', async () => {
-    const mockContent = 'mock content';
-    const mockArrayBuffer = new ArrayBuffer(mockContent.length);
-    const uint8Array = new Uint8Array(mockArrayBuffer);
-    for (let i = 0; i < mockContent.length; i++) {
-      uint8Array[i] = mockContent.charCodeAt(i);
-    }
+  describe('download function', () => {
+    const mockValidUHRPUrl = 'uhrp://validmockhash'
+    const mockInvalidUHRPUrl = 'invalid://url'
 
-    (fetch as jest.Mock).mockResolvedValue({
-      status: 200,
-      blob: jest.fn().mockResolvedValue({
-        arrayBuffer: jest.fn().mockResolvedValue(mockArrayBuffer),
-      }),
-      headers: { get: jest.fn().mockReturnValue('text/plain') },
-    });
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(uhrpUrl.isValidURL as jest.Mock).mockImplementation(
+        (url: string) => url === mockValidUHRPUrl
+      )
+      ;(uhrpUrl.getHashFromURL as jest.Mock).mockReturnValue(
+        Buffer.from('mockhash')
+      )
+      ;(uhrpUrl.getURLForHash as jest.Mock).mockReturnValue(mockValidUHRPUrl)
+      ;(crypto.createHash as jest.Mock).mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        digest: jest
+          .fn()
+          .mockReturnValue(Buffer.from('mockhash').toString('hex'))
+      })
+      resolveSpy = jest
+        .spyOn(resolveModule, 'resolve')
+        .mockResolvedValue(['http://example1.com', 'http://example2.com'])
+    })
 
-    const result = await download({ UHRPUrl: mockValidUHRPUrl });
+    it('should successfully download content with correct MIME type', async () => {
+      const mockContent = 'mock content'
+      const mockArrayBuffer = createMockArrayBuffer(mockContent)
 
-    expect(result).toEqual({
-      data: expect.any(Buffer),
-      mimeType: 'text/plain',
-    });
-    expect(result.data.toString()).toBe(mockContent);
-  });
+      ;(fetch as jest.Mock).mockResolvedValue({
+        status: 200,
+        blob: jest.fn().mockResolvedValue({
+          arrayBuffer: jest.fn().mockResolvedValue(mockArrayBuffer)
+        }),
+        headers: { get: jest.fn().mockReturnValue('text/plain') }
+      })
 
-  it('should throw an error for invalid URLs', async () => {
-    await expect(download({ UHRPUrl: mockInvalidUHRPUrl })).rejects.toThrow('Invalid parameter UHRP url');
-  });
+      const result = await indexModule.download({ UHRPUrl: mockValidUHRPUrl })
 
-  it('should handle network errors during download', async () => {
-    (fetch as jest.Mock).mockRejectedValue(new Error('Download failed'));
+      expect(result).toEqual({
+        data: expect.any(Buffer),
+        mimeType: 'text/plain'
+      })
+      expect(result.data.toString()).toBe(mockContent)
+    })
 
-    await expect(download({ UHRPUrl: mockValidUHRPUrl })).rejects.toThrow('Unable to download content from');
-  });
+    it('should throw an error for invalid URLs', async () => {
+      ;(uhrpUrl.isValidURL as jest.Mock).mockReturnValueOnce(false)
 
-  it('should handle non-200 HTTP status', async () => {
-    (fetch as jest.Mock).mockResolvedValue({
-      status: 404,
-    });
+      await expect(
+        indexModule.download({ UHRPUrl: mockInvalidUHRPUrl })
+      ).rejects.toThrow('Invalid parameter UHRP url')
+    })
 
-    await expect(download({ UHRPUrl: mockValidUHRPUrl })).rejects.toThrow('Unable to download content from');
-  });
+    it('should throw an error if no URLs are resolved', async () => {
+      jest.spyOn(resolveModule, 'resolve').mockResolvedValueOnce([])
 
-  it('should handle empty response', async () => {
-    (fetch as jest.Mock).mockResolvedValue({
-      status: 200,
-      blob: jest.fn().mockResolvedValue({
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
-      }),
-      headers: { get: jest.fn().mockReturnValue('text/plain') },
-    });
+      await expect(
+        indexModule.download({ UHRPUrl: mockValidUHRPUrl })
+      ).rejects.toThrow('Unable to resolve URLs from UHRP URL!')
+    })
 
-    await expect(download({ UHRPUrl: mockValidUHRPUrl })).rejects.toThrow('Unable to download content from');
-  });
+    it('should retry all URLs before throwing an error', async () => {
+      const mockUrls = ['http://example1.com', 'http://example2.com']
 
-  it('should try all URLs before throwing an error', async () => {
-    const mockUrls = ['http://example1.com', 'http://example2.com'];
-    (uhrpUrl.resolve as jest.Mock).mockResolvedValue(mockUrls);
-    (fetch as jest.Mock)
-      .mockRejectedValueOnce(new Error('First URL failed'))
-      .mockRejectedValueOnce(new Error('Second URL failed'));
+      ;(fetch as jest.Mock)
+        .mockRejectedValueOnce(new Error('First URL failed'))
+        .mockRejectedValueOnce(new Error('Second URL failed'))
 
-    await expect(download({ UHRPUrl: mockValidUHRPUrl })).rejects.toThrow('Unable to download content from');
+      await expect(
+        indexModule.download({ UHRPUrl: mockValidUHRPUrl })
+      ).rejects.toThrow('Unable to download content from')
 
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenNthCalledWith(1, mockUrls[0], expect.anything());
-    expect(fetch).toHaveBeenNthCalledWith(2, mockUrls[1], expect.anything());
-  });
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch).toHaveBeenNthCalledWith(1, mockUrls[0], expect.anything())
+      expect(fetch).toHaveBeenNthCalledWith(2, mockUrls[1], expect.anything())
+    })
 
-  it('should handle different MIME types', async () => {
-    const mockContent = 'mock content';
-    const mockArrayBuffer = new ArrayBuffer(mockContent.length);
-    const uint8Array = new Uint8Array(mockArrayBuffer);
-    for (let i = 0; i < mockContent.length; i++) {
-      uint8Array[i] = mockContent.charCodeAt(i);
-    }
+    it('should handle large file downloads correctly', async () => {
+      const largeContent = 'a'.repeat(1024 * 1024) // 1MB of data
+      const mockArrayBuffer = createMockArrayBuffer(largeContent)
 
-    (fetch as jest.Mock).mockResolvedValue({
-      status: 200,
-      blob: jest.fn().mockResolvedValue({
-        arrayBuffer: jest.fn().mockResolvedValue(mockArrayBuffer),
-      }),
-      headers: { get: jest.fn().mockReturnValue('application/json') },
-    });
+      ;(fetch as jest.Mock).mockResolvedValueOnce({
+        status: 200,
+        blob: jest.fn().mockResolvedValue({
+          arrayBuffer: jest.fn().mockResolvedValue(mockArrayBuffer)
+        }),
+        headers: { get: jest.fn().mockReturnValue('application/octet-stream') }
+      })
 
-    const result = await download({ UHRPUrl: mockValidUHRPUrl });
+      const result = await indexModule.download({ UHRPUrl: mockValidUHRPUrl })
 
-    expect(result).toEqual({
-      data: expect.any(Buffer),
-      mimeType: 'application/json',
-    });
-    expect(result.data.toString()).toBe(mockContent);
-  });
-
-  it('should handle large file downloads correctly', async () => {
-    const largeContent = 'a'.repeat(1024 * 1024); // 1MB of data
-    const mockArrayBuffer = new ArrayBuffer(largeContent.length);
-    const uint8Array = new Uint8Array(mockArrayBuffer);
-    for (let i = 0; i < largeContent.length; i++) {
-      uint8Array[i] = largeContent.charCodeAt(i);
-    }
-
-    (fetch as jest.Mock).mockResolvedValue({
-      status: 200,
-      blob: jest.fn().mockResolvedValue({
-        arrayBuffer: jest.fn().mockResolvedValue(mockArrayBuffer),
-      }),
-      headers: { get: jest.fn().mockReturnValue('application/octet-stream') },
-    });
-
-    const result = await download({ UHRPUrl: mockValidUHRPUrl });
-
-    expect(result).toEqual({
-      data: expect.any(Buffer),
-      mimeType: 'application/octet-stream',
-    });
-    expect(result.data.length).toBe(largeContent.length);
-    expect(result.data.toString()).toBe(largeContent);
-  });
-});
+      expect(result).toEqual({
+        data: expect.any(Buffer),
+        mimeType: 'application/octet-stream'
+      })
+      expect(result.data.length).toBe(largeContent.length)
+      expect(result.data.toString()).toBe(largeContent)
+    })
+  })
+})

@@ -5,7 +5,7 @@ export interface LookupResult {
   outputScript?: string
   [key: string]: unknown
 }
-    
+
 export interface PushdropResult {
   fields: Buffer[]
 }
