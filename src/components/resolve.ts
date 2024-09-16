@@ -1,13 +1,12 @@
 import { isValidURL } from 'uhrp-url'
 import * as pushdrop from 'pushdrop'
 import PacketPay from '@packetpay/js'
-import { NanoSeekError } from '../utils/errors'
+import { NanoSeekError, ErrorWithCode } from '../utils/errors'
 import {
   LookupResult,
   PushdropResult,
   PacketPayOptions
 } from '../types/resolve'
-import { ErrorWithCode } from '../types/types'
 
 /**
  * Locates HTTP URLs where content can be downloaded. It uses the passed Confederacy hosts or the default one.
@@ -27,9 +26,10 @@ export const resolve = async (query: {
   clientPrivateKey?: string
 }): Promise<string[]> => {
   if (!query.UHRPUrl || !isValidURL(query.UHRPUrl)) {
-    const e: ErrorWithCode = new Error('Invalid parameter UHRP url')
-    e.code = 'ERR_INVALID_UHRP_URL'
-    throw e
+    throw new ErrorWithCode(
+      'Invalid parameter UHRP url',
+      'ERR_INVALID_UHRP_URL'
+    )
   }
 
   // Use Confederacy UHRP lookup service
@@ -64,9 +64,10 @@ export const resolve = async (query: {
 
     // Check for any errors returned and create error to notify bugsnag.
     if (lookupResult.length > 0 && lookupResult[0].status === 'error') {
-      const e: ErrorWithCode = new Error(lookupResult[0].description)
-      e.code = lookupResult[0].code || 'ERR_UNKNOWN'
-      throw e
+      throw new ErrorWithCode(
+        lookupResult[0].description || 'Unknown error occurred',
+        lookupResult[0].code || 'ERR_UNKNOWN'
+      )
     }
   } catch (error) {
     console.error('Error parsing Confederacy response:', error)
@@ -96,14 +97,14 @@ export const resolve = async (query: {
   ) {
     throw new NanoSeekError(
       'Invalid response format from Confederacy',
-      'ERR_INVALID_RESPONSE'
+      'ERR_INVALID_CONFEDERACY_RESPONSE'
     )
   }
 
   if (!lookupResult[0].outputScript) {
     throw new NanoSeekError(
       'Invalid response format',
-      'ERR_INVALID_RESPONSE_FORMAT'
+      'ERR_INVALID_CONFEDERACY_RESPONSE_FORMAT'
     )
   }
 

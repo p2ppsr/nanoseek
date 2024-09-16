@@ -62,7 +62,7 @@ describe('resolve function', () => {
   })
 
   it('should throw an error for invalid URL', async () => {
-    ;(uhrpUrl.isValidURL as jest.Mock).mockReturnValueOnce(false)
+    (uhrpUrl.isValidURL as jest.Mock).mockReturnValueOnce(false)
     await expect(resolve({ UHRPUrl: 'invalid-url' })).rejects.toThrow(
       'Invalid parameter UHRP url'
     )
@@ -78,13 +78,13 @@ describe('resolve function', () => {
   })
 
   it('should return an empty array when PacketPay returns empty response', async () => {
-    ;(PacketPay as jest.Mock).mockResolvedValueOnce({ body: '[]' })
+    (PacketPay as jest.Mock).mockResolvedValueOnce({ body: '[]' })
     const result = await resolve({ UHRPUrl: 'uhrp://example.com' })
     expect(result).toEqual([])
   })
 
   it('should throw an error when outputScript is missing in PacketPay response', async () => {
-    ;(PacketPay as jest.Mock).mockResolvedValueOnce({
+    (PacketPay as jest.Mock).mockResolvedValueOnce({
       body: JSON.stringify([{}])
     })
     await expect(resolve({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow(
@@ -93,7 +93,7 @@ describe('resolve function', () => {
   })
 
   it('should handle invalid pushdrop decode result', async () => {
-    ;(PacketPay as jest.Mock).mockResolvedValueOnce({
+    (PacketPay as jest.Mock).mockResolvedValueOnce({
       body: Buffer.from(JSON.stringify([{ outputScript: 'test' }]))
     })
     ;(pushdrop.decode as jest.Mock).mockReturnValueOnce({ fields: [] })
@@ -115,14 +115,14 @@ describe('resolve function', () => {
   })
 
   it('should handle network errors', async () => {
-    ;(PacketPay as jest.Mock).mockRejectedValueOnce(new Error('Network error'))
+    (PacketPay as jest.Mock).mockRejectedValueOnce(new Error('Network error'))
     await expect(resolve({ UHRPUrl: 'uhrp://example.com' })).rejects.toThrow(
       'Network error'
     )
   })
 
   it('should use default confederacyHost if not provided', async () => {
-    ;(PacketPay as jest.Mock).mockResolvedValueOnce({
+    (PacketPay as jest.Mock).mockResolvedValueOnce({
       body: Buffer.from(JSON.stringify([{ outputScript: 'test' }]))
     })
     ;(pushdrop.decode as jest.Mock).mockReturnValueOnce({

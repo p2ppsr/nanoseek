@@ -3,7 +3,7 @@ import fetch from 'isomorphic-fetch'
 import crypto from 'crypto'
 import { resolve } from './resolve'
 import { ResolveParams, DownloadResult } from '../types/download'
-import { ErrorWithCode } from '../types/types'
+import { ErrorWithCode } from '../utils/errors'
 
 /**
  * Downloads content from a UHRP url and returns it as a buffer with its mime type, after validating that the hash is correct. It uses the passed Confederacy hosts or the default one.
@@ -22,9 +22,10 @@ export const download = async ({
   clientPrivateKey
 }: ResolveParams = {}): Promise<DownloadResult> => {
   if (!UHRPUrl || !isValidURL(UHRPUrl)) {
-    const e: ErrorWithCode = new Error('Invalid parameter UHRP url')
-    e.code = 'ERR_INVALID_UHRP_URL'
-    throw e
+    throw new ErrorWithCode(
+      'Invalid parameter UHRP url',
+      'ERR_INVALID_UHRP_URL'
+    )
   }
 
   const hash = getHashFromURL(UHRPUrl)
@@ -38,9 +39,10 @@ export const download = async ({
   const URLs = await resolve(resolveParams)
 
   if (URLs.length === 0) {
-    const e: ErrorWithCode = new Error('Unable to resolve URLs from UHRP URL!')
-    e.code = 'ERR_NO_RESOLVED_URLS_FOUND'
-    throw e
+    throw new ErrorWithCode(
+      'Unable to resolve URLs from UHRP URL!',
+      'ERR_NO_RESOLVED_URLS_FOUND'
+    )
   }
 
   for (let i = 0; i < URLs.length; i++) {
@@ -48,8 +50,9 @@ export const download = async ({
       const result = await fetch(URLs[i], { method: 'GET' })
 
       if (result.status >= 400) {
-        throw new Error(
-          `Failed to fetch content from ${URLs[i]}: HTTP status ${result.status}`
+        throw new ErrorWithCode(
+          `Failed to fetch content from ${URLs[i]}: HTTP status ${result.status}`,
+          'ERR_FAILED_TO_FETCH_CONTENT'
         )
       }
 
@@ -57,7 +60,10 @@ export const download = async ({
       const contentBuffer = Buffer.from(await blob.arrayBuffer())
 
       if (contentBuffer.length === 0) {
-        throw new Error(`Empty content from ${URLs[i]}`)
+        throw new ErrorWithCode(
+          `Empty content from ${URLs[i]}`,
+          'ERR_FETCHED_EMPTY_CONTENT'
+        )
       }
 
       const contentHash = crypto
@@ -67,8 +73,9 @@ export const download = async ({
 
       // Ensure both are compared as strings in hex format
       if (contentHash !== hash.toString('hex')) {
-        throw new Error(
-          `Hash mismatch for content from ${URLs[i]}: Expected ${hash.toString('hex')}, got ${contentHash}`
+        throw new ErrorWithCode(
+          `Hash mismatch for content from ${URLs[i]}: Expected ${hash.toString('hex')}, got ${contentHash}`,
+          'ERR_HASH_MISMATCH_FOR_CONTENT'
         )
       }
 
@@ -78,15 +85,16 @@ export const download = async ({
           result.headers.get('Content-Type') || 'application/octet-stream'
       }
     } catch (error) {
-      console.error(`Error downloading from ${URLs[i]}: ${error}`)
+      console.error(
+        `Error downloading from ${URLs[i]}: ${error}, trying next URL`
+      )
       // If error occurs, continue to the next URL.
       continue
     }
   }
 
-  const e: ErrorWithCode = new Error(
-    `Unable to download content from ${UHRPUrl}`
+  throw new ErrorWithCode(
+    `Unable to download content from ${UHRPUrl}`,
+    'ERR_INVALID_DOWNLOAD_URL'
   )
-  e.code = 'ERR_INVALID_DOWNLOAD_URL'
-  throw e
 }

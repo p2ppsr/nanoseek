@@ -22,6 +22,7 @@ const createMockArrayBuffer = (content: string): ArrayBuffer => {
   return buffer
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let resolveSpy: jest.SpyInstance
 
 describe('download function', () => {
@@ -91,7 +92,7 @@ describe('download function', () => {
     })
 
     it('should throw an error for invalid URLs', async () => {
-      ;(uhrpUrl.isValidURL as jest.Mock).mockReturnValueOnce(false)
+      (uhrpUrl.isValidURL as jest.Mock).mockReturnValueOnce(false)
 
       await expect(
         indexModule.download({ UHRPUrl: mockInvalidUHRPUrl })
