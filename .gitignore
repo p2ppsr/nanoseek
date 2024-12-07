@@ -9,4 +9,12 @@ public/.well-known/cwi-secret-server
 app.production.yaml
 app.staging.yaml
 .npmrc
-coverage
+coverage/
+dist/
+node_modules/
+*.js
+webpack.*.js
+*.js.map
+.vscode/
+.eslintrc
+.eslintignore
